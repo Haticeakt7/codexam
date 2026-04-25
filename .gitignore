@@ -1,0 +1,38 @@
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Logs
+logs/
+*.log
+
+# Docker
+docker-data/
+postgres-data/
+redis-data/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets
+*.pem
+*.key
+*.pfx
