@@ -1,0 +1,106 @@
+{
+  "common": {
+    "run": "Run",
+    "submit": "Submit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "search": "Search...",
+    "noData": "No data found"
+  },
+  "nav": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "admin": "Admin Panel",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Code Editor",
+    "language": "Select language",
+    "output": "Output",
+    "execTime": "Time",
+    "memory": "Memory",
+    "stdin": "Standard Input",
+    "runHint": "Press Ctrl+Enter to run",
+    "tlError": "Time limit exceeded",
+    "rteError": "Runtime error",
+    "compileError": "Compilation error"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Confirm Password",
+    "displayName": "Full Name",
+    "loginTitle": "Login",
+    "registerTitle": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password"
+  },
+  "quiz": {
+    "create": "Create New Quiz",
+    "title": "Title",
+    "description": "Description",
+    "duration": "Duration (minutes)",
+    "mode": "Mode",
+    "modeRealTime": "Real Time",
+    "modeFreeStyle": "Free Style",
+    "antiCheat": "Anti-Cheat",
+    "formSchema": "Participant Form",
+    "publish": "Publish",
+    "draft": "Draft",
+    "active": "Active",
+    "ended": "Ended",
+    "noQuizzes": "No quizzes yet",
+    "noQuizzesDesc": "Click to create your first quiz",
+    "participants": "Participants",
+    "questions": "Questions"
+  },
+  "exam": {
+    "enter": "Enter Exam",
+    "rules": "Exam Rules",
+    "antiCheatWarning": "This exam includes monitoring mechanisms",
+    "timeRemaining": "Time Remaining",
+    "questionNav": "Question Navigation",
+    "runCode": "Run",
+    "submitCode": "Submit",
+    "passed": "Passed",
+    "failed": "Failed",
+    "sessionExpired": "Session expired",
+    "sessionTerminated": "Your exam has been terminated",
+    "timeUp": "Time's Up",
+    "finish": "Finish Exam",
+    "summary": "Exam Summary"
+  },
+  "dashboard": {
+    "myQuizzes": "My Quizzes",
+    "newQuiz": "New Quiz",
+    "monitor": "Live Monitor",
+    "results": "Results",
+    "replay": "Watch Replay"
+  },
+  "admin": {
+    "users": "Users",
+    "quizzes": "Quizzes",
+    "sessions": "Sessions",
+    "logs": "System Logs",
+    "stats": "Statistics"
+  },
+  "error": {
+    "404": "Page not found",
+    "403": "You don't have permission to access this page",
+    "500": "Server error",
+    "goHome": "Go to Home"
+  }
+}
