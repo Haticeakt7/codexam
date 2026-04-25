@@ -1,0 +1,106 @@
+{
+  "common": {
+    "run": "Çalıştır",
+    "submit": "Gönder",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "loading": "Yükleniyor...",
+    "error": "Hata oluştu",
+    "success": "Başarılı",
+    "confirm": "Onayla",
+    "back": "Geri",
+    "next": "İleri",
+    "finish": "Bitir",
+    "search": "Ara...",
+    "noData": "Veri bulunamadı"
+  },
+  "nav": {
+    "login": "Giriş Yap",
+    "logout": "Çıkış",
+    "register": "Kayıt Ol",
+    "dashboard": "Panel",
+    "admin": "Admin Panel",
+    "profile": "Profil"
+  },
+  "home": {
+    "title": "Kod Editörü",
+    "language": "Dil seçin",
+    "output": "Çıktı",
+    "execTime": "Süre",
+    "memory": "Bellek",
+    "stdin": "Standart Girdi",
+    "runHint": "Kodu çalıştırmak için Ctrl+Enter",
+    "tlError": "Zaman aşımı",
+    "rteError": "Çalışma zamanı hatası",
+    "compileError": "Derleme hatası"
+  },
+  "auth": {
+    "email": "E-posta",
+    "password": "Şifre",
+    "passwordConfirm": "Şifre Tekrar",
+    "displayName": "Ad Soyad",
+    "loginTitle": "Giriş Yap",
+    "registerTitle": "Kayıt Ol",
+    "noAccount": "Hesabınız yok mu?",
+    "hasAccount": "Zaten hesabınız var mı?",
+    "rememberMe": "Beni hatırla",
+    "forgotPassword": "Şifremi unuttum"
+  },
+  "quiz": {
+    "create": "Yeni Quiz Oluştur",
+    "title": "Başlık",
+    "description": "Açıklama",
+    "duration": "Süre (dakika)",
+    "mode": "Mod",
+    "modeRealTime": "Gerçek Zamanlı",
+    "modeFreeStyle": "Serbest",
+    "antiCheat": "Anti-Cheat",
+    "formSchema": "Katılımcı Formu",
+    "publish": "Yayınla",
+    "draft": "Taslak",
+    "active": "Aktif",
+    "ended": "Bitti",
+    "noQuizzes": "Henüz quiz yok",
+    "noQuizzesDesc": "İlk quizinizi oluşturmak için tıklayın",
+    "participants": "Katılımcı",
+    "questions": "Soru"
+  },
+  "exam": {
+    "enter": "Sınava Gir",
+    "rules": "Sınav Kuralları",
+    "antiCheatWarning": "Bu sınav izleme mekanizmaları içermektedir",
+    "timeRemaining": "Kalan Süre",
+    "questionNav": "Soru Navigasyonu",
+    "runCode": "Çalıştır",
+    "submitCode": "Gönder",
+    "passed": "Geçti",
+    "failed": "Kaldı",
+    "sessionExpired": "Oturum süresi doldu",
+    "sessionTerminated": "Sınavınız sonlandırıldı",
+    "timeUp": "Süre Doldu",
+    "finish": "Sınavı Bitir",
+    "summary": "Sınav Özeti"
+  },
+  "dashboard": {
+    "myQuizzes": "Quizlerim",
+    "newQuiz": "Yeni Quiz",
+    "monitor": "Canlı İzle",
+    "results": "Sonuçlar",
+    "replay": "Replay İzle"
+  },
+  "admin": {
+    "users": "Kullanıcılar",
+    "quizzes": "Quizler",
+    "sessions": "Oturumlar",
+    "logs": "Sistem Logları",
+    "stats": "İstatistikler"
+  },
+  "error": {
+    "404": "Sayfa bulunamadı",
+    "403": "Bu sayfaya erişim yetkiniz yok",
+    "500": "Sunucu hatası",
+    "goHome": "Ana Sayfaya Dön"
+  }
+}
