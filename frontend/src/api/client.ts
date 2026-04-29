@@ -1,10 +1,14 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { useExamStore } from "@/stores/examStore";
+import { mockAdapter } from "@/api/mock/adapter";
+
+const IS_DEMO = import.meta.env.VITE_DEMO_MODE === "true";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "/api",
   timeout: 15_000,
+  ...(IS_DEMO ? { adapter: mockAdapter } : {}),
 });
 
 client.interceptors.request.use((config) => {

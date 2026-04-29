@@ -16,7 +16,8 @@ export interface ApiError {
   detail?: string;
 }
 
-// Auth
+// ---------- Auth ----------
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -31,9 +32,10 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
-// Quiz
-export type QuizStatus = "Draft" | "Active" | "Ended";
-export type QuizMode = "RealTime" | "FreeStyle";
+// ---------- Quiz ----------
+
+export type QuizStatus   = "Draft" | "Active" | "Ended";
+export type QuizMode     = "RealTime" | "FreeStyle";
 export type QuestionType =
   | "Coding"
   | "MultipleChoice"
@@ -70,6 +72,19 @@ export interface Quiz {
   publishedAt?: string;
 }
 
+export interface QuizInfo {
+  id: string;
+  title: string;
+  description?: string;
+  durationMinutes: number;
+  questionCount: number;
+  formSchema: FormField[];
+  antiCheatOptions: AntiCheatOptions;
+  status: QuizStatus;
+}
+
+// ---------- Question ----------
+
 export interface TestCase {
   id: string;
   input: string;
@@ -88,7 +103,8 @@ export interface Question {
   testCases?: TestCase[];
 }
 
-// Execution
+// ---------- Execution ----------
+
 export type ExecutionStatus =
   | "Pending"
   | "Running"
@@ -106,11 +122,77 @@ export interface ExecutionResult {
   memoryUsedKb?: number;
 }
 
-// Session
+// ---------- Session ----------
+
 export interface JoinQuizResponse {
   sessionToken: string;
   sessionId: string;
   quizId: string;
   endsAt: string;
   questions: Question[];
+}
+
+// ---------- Results / Replay ----------
+
+export interface ReplayDiffEntry {
+  timeMs: number;
+  diff: string;
+}
+
+export interface ReplayData {
+  submissionId: string;
+  diffs: ReplayDiffEntry[];
+}
+
+export interface ParticipantResult {
+  sessionId: string;
+  formData: Record<string, unknown>;
+  totalScore: number;
+  maxScore: number;
+  completedQuestions: number;
+  submittedAt: string;
+}
+
+export interface QuestionStat {
+  questionId: string;
+  title: string;
+  successRate: number;
+}
+
+export interface QuizResults {
+  participantCount: number;
+  avgScore: number;
+  participants: ParticipantResult[];
+  questionStats: QuestionStat[];
+}
+
+// ---------- Admin ----------
+
+export interface AdminStats {
+  totalUsers: number;
+  activeQuizzes: number;
+  dailyExecutions: number;
+  last24hErrors: number;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  role: "Admin" | "User";
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AdminSession {
+  id: string;
+  quizId: string;
+  quizTitle: string;
+  formData: Record<string, unknown>;
+  startedAt: string;
+  endsAt: string;
+  finishedAt?: string;
+  isActive: boolean;
+  isLocked: boolean;
 }
