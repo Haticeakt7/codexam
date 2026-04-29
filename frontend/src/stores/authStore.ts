@@ -33,8 +33,10 @@ export const useAuthStore = create<AuthState>()(
       setToken: (accessToken) =>
         set({ accessToken }),
 
-      logout: () =>
-        set({ user: null, accessToken: null, isAuthenticated: false }),
+      logout: () => {
+        localStorage.removeItem("codexam_refresh");
+        set({ user: null, accessToken: null, isAuthenticated: false });
+      },
     }),
     { name: "codexam_auth" }
   )

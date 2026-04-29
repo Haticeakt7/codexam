@@ -56,7 +56,7 @@ function err(status: number, title: string): never {
 }
 
 function parseBody(config: InternalAxiosRequestConfig): Record<string, unknown> {
-  if (!config.data) return {};
+  if (config.data == null) return {};
   if (typeof config.data === "string") {
     try { return JSON.parse(config.data); } catch { return {}; }
   }

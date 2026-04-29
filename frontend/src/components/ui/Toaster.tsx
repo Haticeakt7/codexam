@@ -58,7 +58,9 @@ export default function Toaster() {
           <span className="mt-px text-sm font-bold">{iconMap[t.type]}</span>
           <p className="flex-1 text-sm font-medium">{t.message}</p>
           <button
+            type="button"
             onClick={() => dismiss(t.id)}
+            aria-label="Dismiss notification"
             className="text-xs opacity-60 hover:opacity-100 transition-opacity"
           >
             ✕

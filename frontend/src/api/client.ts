@@ -55,7 +55,7 @@ client.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshRes = await axios.post("/api/auth/refresh", {
+        const refreshRes = await client.post("/auth/refresh", {
           refreshToken: localStorage.getItem("codexam_refresh"),
         });
         const { accessToken, refreshToken } = refreshRes.data;

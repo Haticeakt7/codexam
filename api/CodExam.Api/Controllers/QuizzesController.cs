@@ -124,8 +124,9 @@ public class QuizzesController(
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, [FromBody] SubmitRequest request)
     {
-        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault()
-            ?? throw new UnauthorizedAccessException("X-Session-Token header is required.");
+        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault();
+        if (string.IsNullOrEmpty(sessionToken))
+            return Unauthorized(new { title = "X-Session-Token header is required." });
         await sessionService.SubmitAsync(id, sessionToken, request);
         return Accepted();
     }
@@ -133,8 +134,9 @@ public class QuizzesController(
     [HttpPost("{id:guid}/event")]
     public async Task<IActionResult> LogEvent(Guid id, [FromBody] ExamEventRequest request)
     {
-        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault()
-            ?? throw new UnauthorizedAccessException("X-Session-Token header is required.");
+        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault();
+        if (string.IsNullOrEmpty(sessionToken))
+            return Unauthorized(new { title = "X-Session-Token header is required." });
         await sessionService.LogEventAsync(id, sessionToken, request);
         return NoContent();
     }

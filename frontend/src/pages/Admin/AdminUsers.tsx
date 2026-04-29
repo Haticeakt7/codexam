@@ -47,7 +47,7 @@
 //   - Sayfalar arası: pagination
 // ==========================================================
 
-import { useAdminUsers, useUpdateUserRole, useDeleteUser } from "@/hooks/useAdmin";
+import { useAdminUsers, useUpdateUser, useDeleteUser } from "@/hooks/useAdmin";
 import type { AdminUser } from "@/api/types";
 
 export default function AdminUsers() {
@@ -60,7 +60,7 @@ export default function AdminUsers() {
   // const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
 
   // TODO: Yukarıdaki tasarım notlarına göre UI implement edilecek
-  void useAdminUsers; void useUpdateUserRole; void useDeleteUser;
+  void useAdminUsers; void useUpdateUser; void useDeleteUser;
   const _: AdminUser | null = null; void _;
   return null;
 }

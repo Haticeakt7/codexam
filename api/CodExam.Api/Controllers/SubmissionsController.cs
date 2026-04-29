@@ -11,8 +11,9 @@ public class SubmissionsController(ISubmissionService submissionService) : Contr
     [HttpPatch("{id:guid}/replay")]
     public async Task<IActionResult> AppendReplayDiff(Guid id, [FromBody] AppendReplayDiffRequest request)
     {
-        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault()
-            ?? throw new UnauthorizedAccessException("X-Session-Token header is required.");
+        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault();
+        if (string.IsNullOrEmpty(sessionToken))
+            return Unauthorized(new { title = "X-Session-Token header is required." });
         await submissionService.AppendReplayDiffAsync(id, sessionToken, request);
         return NoContent();
     }

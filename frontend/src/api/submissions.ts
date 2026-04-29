@@ -1,10 +1,7 @@
 import client from "./client";
-import type { ReplayData, QuizResults } from "./types";
+import type { ReplayData, QuizResults, ReplayDiffEntry } from "./types";
 
-export interface ReplayDiffEntry {
-  timeMs: number;
-  diff: string;
-}
+export type { ReplayDiffEntry };
 
 export const submissionsApi = {
   appendReplayDiff: (submissionId: string, diffs: ReplayDiffEntry[]) =>

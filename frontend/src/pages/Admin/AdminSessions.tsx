@@ -43,7 +43,7 @@
 //   - Herhangi bir özel navigasyon yok
 // ==========================================================
 
-import { useAdminSessions, useTerminateSession } from "@/hooks/useAdmin";
+import { useAdminSessions, useForceEndSession } from "@/hooks/useAdmin";
 
 export default function AdminSessions() {
   // const { data: sessions, isLoading } = useAdminSessions();
@@ -52,6 +52,6 @@ export default function AdminSessions() {
   // const [terminateTarget, setTerminateTarget] = useState(null);
 
   // TODO: Yukarıdaki tasarım notlarına göre UI implement edilecek
-  void useAdminSessions; void useTerminateSession;
+  void useAdminSessions; void useForceEndSession;
   return null;
 }
