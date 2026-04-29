@@ -40,7 +40,6 @@ export function useLogout() {
 
   return () => {
     logout();
-    localStorage.removeItem("codexam_refresh");
     navigate("/login");
   };
 }

@@ -13,11 +13,11 @@
 //   - :id → quiz ID (public erişim)
 //
 // BAĞLI HOOKLAR:
-//   - useQuizInfo(id)     → @/hooks/useSessions → GET /api/quizzes/:id/info
+//   - useQuizInfo(id)     → @/hooks/useQuizzes → GET /api/quizzes/:id/info
 //                           data: { title, description, durationMinutes, questionCount,
 //                                   formSchema, antiCheatOptions, status }
 //                           isLoading: boolean
-//   - useJoinQuiz()       → @/hooks/useSessions → POST /api/quizzes/:id/join
+//   - useJoinQuiz(id)     → @/hooks/useSessions → POST /api/quizzes/:id/join
 //                           mutate({ quizId, formData })
 //                           onSuccess: ({ sessionToken, sessionId, endsAt }) →
 //                             examStore güncellenir, localStorage'a token kaydedilir,

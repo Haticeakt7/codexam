@@ -24,7 +24,7 @@ export function useJoinQuiz(quizId: string) {
         quizId:       data.quizId,
         endsAt:       data.endsAt,
       });
-      localStorage.setItem("codexam_session", data.sessionToken);
+      localStorage.setItem("codexam_session", data.sessionToken); // page-reload recovery; one active session at a time
     },
   });
 }

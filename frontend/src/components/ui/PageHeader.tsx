@@ -27,6 +27,7 @@
 // ==========================================================
 
 import { type ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 interface BreadcrumbItem {
   label: string;
@@ -50,9 +51,9 @@ export default function PageHeader({ title, subtitle, breadcrumbs, action }: Pag
               <span key={i} className="flex items-center gap-1">
                 {i > 0 && <span>/</span>}
                 {crumb.href ? (
-                  <a href={crumb.href} className="hover:text-primary transition-colors">
+                  <Link to={crumb.href} className="hover:text-primary transition-colors">
                     {crumb.label}
-                  </a>
+                  </Link>
                 ) : (
                   <span>{crumb.label}</span>
                 )}

@@ -11,10 +11,11 @@
 //   - Toast type: { id, type, message }
 //   - type: "success" | "error" | "warning" | "info"
 //
-// TOAST EKLEMEk (başka bileşenlerden):
-//   const { add } = useToastStore();
-//   add({ type: "success", message: "Quiz kaydedildi!" });
-//   add({ type: "error",   message: "Bir hata oluştu." });
+// TOAST EKLEMEK (başka bileşenlerden):
+//   import { toast } from "@/stores/toastStore";
+//   toast.success("Quiz kaydedildi!");
+//   toast.error("Bir hata oluştu.");
+//   — ya da hook içinden: useToastStore().push("success", "...")
 //
 // TASARIM NOTLARI:
 //   - fixed bottom-4 right-4, z-[100], flex-col gap-2

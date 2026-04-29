@@ -22,10 +22,11 @@
 //
 // BAĞLI HOOKLAR:
 //   - useQuizInfo(id)        → GET /api/quizzes/:id/info → soru listesi
-//   - useSubmit()            → @/hooks/useSessions → POST /api/quizzes/:id/submit
+//   - useSubmit(id)          → @/hooks/useSessions → POST /api/quizzes/:id/submit
 //                              mutate({ questionId, language, code, answer })
 //                              onSuccess: test case sonuçları gösterilir
-//   - useLogEvent()          → @/hooks/useSessions → POST /api/quizzes/:id/event
+//   - useLogEvent(id)        → @/hooks/useSessions → POST /api/quizzes/:id/event
+//                              mutate({ eventType, metadata? })
 //                              (anti-cheat olaylarını loglar)
 //   - useRunCode()           → @/hooks/useExecute → run (coding soruları için çalıştırma)
 //

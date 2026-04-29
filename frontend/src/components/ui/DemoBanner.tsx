@@ -21,7 +21,7 @@
 // ==========================================================
 
 export default function DemoBanner() {
-  if (!import.meta.env.VITE_DEMO_MODE) return null;
+  if (import.meta.env.VITE_DEMO_MODE !== "true") return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-6 bg-amber-500 px-4 py-2 text-sm font-medium text-amber-950">

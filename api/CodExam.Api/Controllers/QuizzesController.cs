@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CodExam.Api.Filters;
 using CodExam.Application.DTOs.Quiz;
 using CodExam.Application.DTOs.Session;
 using CodExam.Application.Interfaces;
@@ -122,21 +123,19 @@ public class QuizzesController(
     }
 
     [HttpPost("{id:guid}/submit")]
+    [RequireSessionToken]
     public async Task<IActionResult> Submit(Guid id, [FromBody] SubmitRequest request)
     {
-        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault();
-        if (string.IsNullOrEmpty(sessionToken))
-            return Unauthorized(new { title = "X-Session-Token header is required." });
+        var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
         await sessionService.SubmitAsync(id, sessionToken, request);
         return Accepted();
     }
 
     [HttpPost("{id:guid}/event")]
+    [RequireSessionToken]
     public async Task<IActionResult> LogEvent(Guid id, [FromBody] ExamEventRequest request)
     {
-        var sessionToken = Request.Headers["X-Session-Token"].FirstOrDefault();
-        if (string.IsNullOrEmpty(sessionToken))
-            return Unauthorized(new { title = "X-Session-Token header is required." });
+        var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
         await sessionService.LogEventAsync(id, sessionToken, request);
         return NoContent();
     }
