@@ -18,8 +18,16 @@ export function useLogin() {
 }
 
 export function useRegister() {
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const navigate = useNavigate();
+
   return useMutation({
     mutationFn: (data: RegisterRequest) => authApi.register(data),
+    onSuccess: (data) => {
+      setAuth(data.user, data.accessToken);
+      localStorage.setItem("codexam_refresh", data.refreshToken);
+      navigate("/dashboard");
+    },
   });
 }
 

@@ -14,7 +14,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var result = await authService.RegisterAsync(request);
-        return CreatedAtAction(nameof(Me), result);
+        return CreatedAtAction(nameof(Me), routeValues: null, value: result);
     }
 
     [HttpPost("login")]
