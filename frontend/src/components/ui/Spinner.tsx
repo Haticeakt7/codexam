@@ -1,3 +1,26 @@
+// ==========================================================
+// Spinner – Yükleme Göstergesi Bileşeni
+// ==========================================================
+//
+// PROPS:
+//   - size?:      "sm" | "md" | "lg"  (default: "md")
+//   - className?: string → ek CSS (örn: "mx-auto" ortalama için)
+//
+// TASARIM NOTLARI:
+//   - animate-spin dairesi: border-2, border-border, border-t-primary
+//   - sm: h-4 w-4  → buton içi, küçük alanlar
+//   - md: h-6 w-6  → kart/panel içi genel yükleme
+//   - lg: h-10 w-10 → tam sayfa yükleme ekranları
+//   - role="status" aria-label="Yükleniyor" → erişilebilirlik
+//
+// KULLANIM ÖRNEKLERİ:
+//   <Spinner />                       ← md, sola hizalı
+//   <Spinner className="mx-auto" />   ← ortalanmış
+//   <Spinner size="lg" />             ← tam sayfa
+//   Button içinde: <Spinner size="sm" /> (loading prop ile otomatik)
+//
+// ==========================================================
+
 interface Props {
   size?: "sm" | "md" | "lg";
   className?: string;

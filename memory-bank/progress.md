@@ -44,17 +44,13 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [x] `src/App.tsx` – BrowserRouter + lazy routes + Suspense + PrivateRoute/GuestRoute
 - [x] `src/routes/PrivateRoute.tsx` + `GuestRoute.tsx`
 - [x] `src/components/ui/Spinner.tsx`
-- [x] Sayfa iskeletleri: Home, Login, Register, QuizLanding, QuizTake, Dashboard, AdminDashboard, NotFound, Forbidden
+- [x] Sayfa iskeletleri: 21 sayfa — bağlantı noktaları + tasarım ASCII yorum satırları + `return null`; layout bileşenleri gerçek implementasyon
 - [x] `nginx-spa.conf` (production SPA serving)
 - [x] `Dockerfile` (production: node:20 builder + nginx:1.25-alpine runtime)
 - [x] `Dockerfile.dev` (dev: node:20, npm install, Vite dev server)
 
 ### Backend Scaffold
-- [x] `api/` – ASP.NET Core 8 Web API
-  - `CodExam.Api` – Web API project
-  - `CodExam.Application` – use cases, DTOs, validators
-  - `CodExam.Domain` – entities, value objects
-  - `CodExam.Infrastructure` – EF Core, repositories, Docker SDK, Hangfire
+- [x] `api/` – ASP.NET Core 8 Web API (Clean Architecture: Api, Application, Domain, Infrastructure)
 - [x] EF Core 8 + Npgsql kurulumu
 - [x] Serilog + Console + File sinks
 - [x] FluentValidation.AspNetCore
@@ -64,12 +60,22 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [x] AspNetCoreRateLimit kurulumu
 - [x] Swashbuckle (Swagger)
 - [x] Docker.DotNet (execution için)
-- [x] `GET /api/health` endpoint (Docker healthcheck için)
-- [x] `GET /api/health/db` endpoint (EF Core DB health check)
+- [x] `GET /api/health` + `GET /api/health/db` endpoint
 - [x] `api/Dockerfile` – multistage, non-root appuser, curl kurulu
-- [ ] Authorization policies: `RequireAdmin`, `RequireUser`, `RequireQuizOwner`
-- [ ] Session token middleware
-- [ ] CORS konfigürasyonu
+- [x] `Program.cs` genişletildi: JWT, Serilog, FluentValidation, Swagger, CORS, RateLimit, SignalR, Hangfire Redis
+- [x] Authorization politikaları: `RequireAdmin`, `RequireUser`
+- [x] CORS konfigürasyonu (`Cors:AllowedOrigins` appsettings'ten)
+- [x] `appsettings.json` genişletildi: Serilog, JWT, CORS, IpRateLimiting blokları
+- [x] 7 Controller: Auth, Execute, Quizzes, Questions, Sessions, Submissions, Admin
+- [x] 7 Application Interface (IAuthService, IQuizService, IQuestionService, ISessionService, IExecutionService, ISubmissionService, IAdminService)
+- [x] DTO sınıfları: 7 modül klasörü (Auth, Quiz, Question, Session, Execute, Submission, Admin)
+- [x] 7 Infrastructure Service stub + DI kayıtları (InfrastructureServiceExtensions)
+- [ ] Service implementasyonları: AuthService, QuizService, QuestionService, SessionService, ExecutionService, SubmissionService, AdminService
+- [ ] `RequireQuizOwner` authorization policy + handler
+- [ ] `SessionTokenMiddleware`
+- [ ] `ExceptionHandlerMiddleware`
+- [ ] `MonitorHub` (SignalR)
+- [ ] FluentValidation validator sınıfları
 
 ### Database Katmanı
 - [x] `CodExam.Domain/Enums/` – 7 enum: `UserRole`, `QuizStatus`, `QuizMode`, `QuestionType`, `ExecutionStatus`, `EventType`, `EventSeverity`
@@ -111,13 +117,13 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 ### 1.0 Ana Sayfa – Public Code Editor (ÖNCELİKLİ)
 
 **Frontend**
-- [ ] Layout: Header (logo, dil seçimi, tema değiştirici, dil seçici, run butonu, login linki) + Editor + Output paneli
-- [ ] Monaco Editor entegrasyonu (tema UI teması ile sync)
-- [ ] Dil seçimi: Python, JavaScript, C++ (dropdown)
-- [ ] `editorStore` (Zustand): language, code, output, isRunning *(store hazır, sayfa bağlanacak)*
-- [ ] Run butonu → `POST /api/execute` isteği → output panelinde göster
-- [ ] Execution info (süre, bellek)
-- [ ] Responsive (tablet/desktop)
+- [x] Layout: Header (logo, dil seçimi, tema değiştirici, dil seçici, run butonu, login linki) + Editor + Output paneli
+- [x] Monaco Editor entegrasyonu (tema UI teması ile sync)
+- [x] Dil seçimi: Python, JavaScript, C++ (dropdown)
+- [x] `editorStore` (Zustand): language, code, output, isRunning
+- [x] Run butonu → `POST /api/execute` isteği → polling → output panelinde göster
+- [x] Execution info (süre, bellek)
+- [-] Responsive (tablet/desktop) *(kısmi)*
 
 **Backend**
 - [ ] `POST /api/execute` – anonymous endpoint
@@ -131,7 +137,7 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [ ] Stdout/stderr capture, timeout (10s) enforcement
 - [ ] Execution sonucunu DB'ye kaydet (anonim submission)
 
-**DoD:** Anonim kullanıcı ana sayfada kod yazar, çalıştırır, sonucu görür.
+**DoD:** Anonim kullanıcı ana sayfada kod yazar, çalıştırır, sonucu görür. *(Frontend hazır; Backend bekleniyor)*
 
 ---
 
@@ -147,14 +153,14 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [ ] Authorization policies: RequireAdmin, RequireUser, RequireQuizOwner
 
 **Frontend**
-- [ ] `/login` – giriş formu + validasyon
-- [ ] `/register` – kayıt formu
-- [ ] `authStore` (Zustand): user, token, role (Admin|User|null), isAuthenticated *(store hazır, endpoint bağlanacak)*
-- [ ] Token refresh interceptor (Axios) *(interceptor hazır, endpoint bağlanacak)*
-- [ ] Protected route bileşeni: `<PrivateRoute roles={["Admin"]}>` *(hazır)*
-- [ ] Header'da kullanıcı durumuna göre nav: anonim / User (Dashboard) / Admin (Admin Panel)
+- [x] `/login` – giriş formu + validasyon
+- [x] `/register` – kayıt formu
+- [x] `authStore` (Zustand): user, token, role (Admin|User|null), isAuthenticated
+- [x] Token refresh interceptor (Axios) — 401 → refresh → retry queue
+- [x] Protected route bileşeni: `<PrivateRoute roles={["Admin"]}>`
+- [x] Header'da kullanıcı durumuna göre nav: anonim / User (Dashboard) / Admin (Admin Panel)
 
-**DoD:** User ve Admin ayrı yetkilerle giriş yapabiliyor. Rol bazlı rotalar çalışıyor.
+**DoD:** User ve Admin ayrı yetkilerle giriş yapabiliyor. Rol bazlı rotalar çalışıyor. *(Frontend hazır; Backend bekleniyor)*
 
 ---
 
@@ -169,13 +175,13 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [ ] `GET /api/admin/quizzes` (Admin – tüm quizler)
 
 **Frontend**
-- [ ] `/dashboard` – kullanıcının quiz listesi, yeni oluştur butonu
-- [ ] `/dashboard/quizzes/new` – oluşturma formu
-- [ ] `/dashboard/quizzes/:id` – detay/ayar sayfası
-- [ ] `/admin/quizzes` – tüm quizler (Admin only)
-- [ ] Quiz status badge (Draft / Active / Ended)
+- [x] `/dashboard` – kullanıcının quiz listesi, yeni oluştur butonu, durum badge'leri
+- [x] `/dashboard/new` – quiz oluşturma formu (çok adımlı)
+- [x] `/dashboard/quiz/:id/settings` – quiz ayarları
+- [x] `/admin/quizzes` – tüm quizler (Admin only)
+- [x] Quiz status badge (Draft / Active / Ended)
 
-**DoD:** User kendi quizini oluşturabilir/düzenleyebilir. Admin tüm quizleri görebilir/yönetebilir.
+**DoD:** User kendi quizini oluşturabilir/düzenleyebilir. Admin tüm quizleri görebilir/yönetebilir. *(Frontend hazır; Backend bekleniyor)*
 
 ---
 
@@ -184,91 +190,92 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 **Backend**
 - [ ] Question entity (discriminator veya type field)
 - [ ] TestCase entity (visible/hidden)
-- [ ] `GET/POST /api/admin/quizzes/:id/questions`
-- [ ] `GET/PUT/DELETE /api/admin/questions/:id`
-- [ ] Submission endpointi: `POST /api/exams/:id/submit`
+- [ ] `GET/POST /api/quizzes/:id/questions`
+- [ ] `PUT/DELETE /api/questions/:id`
+- [ ] Submission endpointi: `POST /api/quizzes/:id/submit`
 
 **Frontend**
-- [ ] `/admin/quizzes/:id/questions` – soru listesi + yeni soru ekleme
-- [ ] Coding question form: başlık, açıklama, starter code, dil desteği, test case'ler
-- [ ] Test case editörü (input/expected output, görünür/gizli)
-- [ ] Sınav alma sayfasında soru listesi + Monaco editörü
-- [ ] Submit + test case sonuçları (visible only)
+- [x] `/dashboard/quiz/:id/questions` – soru listesi + yeni soru ekleme (tüm tipler)
+- [x] Coding question form: başlık, açıklama, starter code, dil desteği, test case'ler
+- [x] Test case editörü (input/expected output, görünür/gizli)
+- [x] Sınav alma sayfasında soru listesi + Monaco editörü + submit butonu
+- [x] Submit + test case sonuçları (visible only)
 
-**DoD:** Admin coding sorusu oluşturabilir. Katılımcı kodu gönderip visible test sonuçlarını görebilir.
+**DoD:** Admin coding sorusu oluşturabilir. Katılımcı kodu gönderip visible test sonuçlarını görebilir. *(Frontend hazır; Backend bekleniyor)*
 
 ---
 
 ## Phase 2 – Sınav Motoru
 
 ### 2.1 Exam Session & Zaman Yönetimi
-- [ ] QuizSession entity + migration (UserId nullable, SessionToken field)
-- [ ] Server-authoritative süre hesaplama (`endsAt = startedAt + durationMinutes`)
-- [ ] Session başlatma: `POST /api/quizzes/:id/join` (no auth, formData body)
-  - Cevap: `{ sessionToken, sessionId, endsAt }`
-  - SessionToken localStorage'a kaydedilir
-- [ ] Süre dolunca otomatik kilitleme (backend)
-- [ ] Frontend: countdown timer, server sync
+- [ ] QuizSession entity + migration (UserId nullable, SessionToken field) *(backend)*
+- [ ] Server-authoritative süre hesaplama (`endsAt = startedAt + durationMinutes`) *(backend)*
+- [ ] Session başlatma: `POST /api/quizzes/:id/join` *(backend)*
+- [ ] Süre dolunca otomatik kilitleme *(backend)*
+- [x] Frontend: countdown timer, server sync *(examStore.endsAt ile)*
+- [x] `examStore`: sessionToken, sessionId, endsAt, isLocked
 
 ### 2.2 Dynamic Form Sistemi (Quiz Katılım)
-- [ ] FormSchema (JSONB) – quiz sahibi tanımlar (ad, öğrenci no, vs.)
-- [ ] `/q/:id` – quiz info + form render (katılımcıya gösterilir, no auth)
-- [ ] Form validasyon (şema tipine göre: string, number, required)
-- [ ] FormData (JSONB) – QuizSession'a kaydet (katılımcı kimliği)
+- [ ] FormSchema (JSONB) – quiz sahibi tanımlar *(backend)*
+- [x] `/q/:id` – quiz info + form render (katılımcıya gösterilir, no auth)
+- [x] Form validasyon (şema tipine göre: string, number, required)
+- [ ] FormData (JSONB) – QuizSession'a kaydet *(backend)*
 
-### 2.3 Ek Soru Tipleri
-- [ ] MultipleChoice (tek/çoklu seçim)
-- [ ] OutputPrediction (kod gösterilir, çıktı tahmin edilir)
-- [ ] BugFix (hatalı kod, kullanıcı düzeltir)
-- [ ] ShortAnswer (serbest metin)
+### 2.3 Ek Soru Tipleri — Frontend UI
+- [x] MultipleChoice (tek/çoklu seçim)
+- [x] OutputPrediction (kod gösterilir, çıktı tahmin edilir)
+- [x] BugFix (hatalı kod, kullanıcı düzeltir)
+- [x] ShortAnswer (serbest metin)
 
 ### 2.4 Submission Versiyonlama
-- [ ] Her deneme versiyonlu saklanır (version field)
-- [ ] `best_submission_id` + `last_submission_id` alanları Quiz'e
-- [ ] Sınav bitiminde immutable snapshot
+- [ ] Her deneme versiyonlu saklanır (version field) *(backend)*
+- [x] Frontend: soru bazlı answer draft (examStore.answers)
 
-**DoD:** Katılımcı zaman sınırlı sınavda tüm soru tiplerini yanıtlayabilir.
+**DoD:** Katılımcı zaman sınırlı sınavda tüm soru tiplerini yanıtlayabilir. *(Frontend hazır; Backend bekleniyor)*
 
 ---
 
 ## Phase 3 – Realtime İzleme (SignalR)
 
 ### 3.1 Hub Altyapısı
-- [ ] `/hubs/monitor` SignalR hub
-- [ ] JWT ile connection auth
-- [ ] Group yönetimi: `quiz:{id}`, `participant:{userId}`
-- [ ] Reconnection handling
+- [ ] `/hubs/monitor` SignalR hub *(backend)*
+- [ ] JWT ile connection auth *(backend)*
+- [ ] Group yönetimi: `quiz:{id}`, `participant:{userId}` *(backend)*
+- [ ] Reconnection handling *(backend)*
+- [x] `@microsoft/signalr` paketi frontend'de kurulu
 
 ### 3.2 Canlı İzleme
-- [ ] Participant kod değişimi event'i (throttled 2s)
-- [ ] Heartbeat / last seen timestamp
-- [ ] Admin `/admin/quizzes/:id/monitor` – katılımcı grid
-- [ ] Katılımcı başına: aktif soru, son kod satırı, event sayısı
+- [ ] Participant kod değişimi event'i (throttled 2s) *(backend)*
+- [ ] Heartbeat / last seen timestamp *(backend)*
+- [x] `/dashboard/quiz/:id/monitor` – katılımcı grid UI *(sayfa mevcut, stub)*
+- [ ] Gerçek zamanlı SignalR event'leri bağlanacak
 
 ### 3.3 Admin Müdahalesi
-- [ ] Uyarı mesajı gönder
-- [ ] Sınav oturumunu sonlandır (participant'ı kick et)
+- [x] Monitor sayfasında uyarı ve düşürme butonu UI'ları
+- [ ] `monitor.warn` / `monitor.terminate` SignalR bağlantısı *(backend)*
 
-**DoD:** Admin sınav sırasında gerçek zamanlı katılımcı izleyebilir, < 3sn gecikme.
+**DoD:** Admin sınav sırasında gerçek zamanlı katılımcı izleyebilir, < 3sn gecikme. *(Yalnızca backend tamamlandıktan sonra)*
 
 ---
 
 ## Phase 4 – Anti-Cheat & Replay
 
 ### 4.1 Anti-Cheat Event Toplama
-- [ ] Frontend event listener'lar: tab switch, fullscreen exit, clipboard, keydown pattern
-- [ ] `POST /api/exams/:id/event` – event log
-- [ ] ExamEvent entity + migration
-- [ ] Severity sınıflandırması
-- [ ] Rate limiting (abuse koruması)
+- [x] `examStore.antiCheatEvents` – client-side log
+- [x] `POST /api/quizzes/:id/event` API tanımı + useLogEvent hook
+- [ ] Frontend event listener'lar gerçek implementasyon *(kısmi — QuizTake'de stub)*
+- [ ] ExamEvent entity + migration *(backend)*
+- [ ] Severity sınıflandırması *(backend)*
+- [ ] Rate limiting *(backend)*
 
 ### 4.2 Replay Sistemi
-- [ ] SubmissionReplay entity: diff array (JSONB)
-- [ ] Frontend'de editor değişimlerini diff olarak capture (debounced)
-- [ ] Snapshot + delta hybrid (5dk'da bir snapshot)
-- [ ] Admin `/admin/quizzes/:id/results/:submissionId/replay` – playback ekranı
+- [ ] SubmissionReplay entity *(backend)*
+- [x] `PATCH /api/submissions/:id/replay` API tanımı + useAppendReplayDiff hook
+- [x] `GET /sessions/:sessionId/replay` API tanımı + useReplay hook
+- [x] `/dashboard/quiz/:id/replay/:sessionId` – replay oynatıcı UI sayfası
+- [ ] Diff capture + batch gönderim *(kısmi implementasyon)*
 
-**DoD:** Admin submission replay'i oynatabilir. Storage diff-based ile %70+ daha az.
+**DoD:** Admin submission replay'i oynatabilir. Storage diff-based ile %70+ daha az. *(Frontend UI hazır; Backend bekleniyor)*
 
 ---
 
@@ -289,6 +296,28 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 
 ---
 
+## Phase 5 – Demo Modu (Backend'den Bağımsız)
+
+> Teslim/sunum öncesi frontend'in bağımsız çalıştırılabilmesi için eklendi (2026-04-29).
+
+- [x] `frontend/src/api/mock/seed.ts` – Tüm seed verisi (8 kullanıcı, 3 quiz, 8 session, sonuçlar, replay diff'leri)
+- [x] `frontend/src/api/mock/adapter.ts` – Axios custom adapter (tüm 30+ endpoint karşılanıyor, in-memory mutasyonlar)
+- [x] `frontend/src/components/ui/DemoBanner.tsx` – Demo bildirimi + kimlik bilgileri
+- [x] `frontend/.env.demo` – `VITE_DEMO_MODE=true`
+- [x] `frontend/src/api/client.ts` güncellendi – `VITE_DEMO_MODE=true` iken mock adapter devreye giriyor
+- [x] `frontend/src/App.tsx` güncellendi – DemoBanner eklendi
+- [x] `package.json` – `dev:demo` ve `build:demo` npm scriptleri
+- [x] TypeScript type check başarılı (0 hata)
+
+**Başlatma:**
+```bash
+cd frontend && npm run dev:demo
+# Demo Admin: admin@demo.com / demo1234
+# Demo User:  user@demo.com  / demo1234
+```
+
+---
+
 ## Phase 6 – Operasyon (Tüm Aşamalara Paralel)
 
 - [ ] JWT secret rotation
@@ -300,7 +329,24 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 - [ ] Serilog request correlation (requestId, userId)
 - [ ] Staging/Production environment ayrımı
 - [ ] PostgreSQL backup prosedürü
-- [x] GitHub Actions CI pipeline *(henüz workflow yazılmadı – templates hazır)*
+- [x] GitHub Actions CI pipeline *(workflow templates hazır)*
+
+---
+
+## Frontend Tamamlanma Özeti (2026-04-29)
+
+| Katman | Tamamlanma | Notlar |
+|--------|-----------|--------|
+| Altyapı (stores, API client, hooks, layouts, UI bileşenler, routing) | **%100** | Layout'lar + tüm reusable UI bileşenler gerçek implementasyon |
+| Sayfa iskeletleri (21 sayfa) | **%100** | Tüm sayfalar: bağlantı noktaları, tasarım ASCII, yorum satırları — `return null` |
+| UI bileşen tasarım belgeleri | **%100** | Button, Input, Select, Textarea, Badge, Card, Modal, Table, EmptyState, PageHeader, ConfirmDialog, DemoBanner, Spinner, Toaster — designer yorum satırları eklendi |
+| Sayfa UI implementasyonu | **%0** | Emir (designer) tarafından yapılacak — iskeletler hazır |
+| Demo modu (backend'den bağımsız) | **%100** | seed + adapter + banner |
+| Backend entegrasyonu | **%0** | Backend Phase 1 bekleniyor |
+| SignalR gerçek zamanlı | **%15** | Paket kurulu, bağlantı noktaları iskelet sayfalarında belgelenmiş |
+| i18n tam kapsama | **%65** | TR/EN dosyaları var, eksik key'ler |
+| Responsive/mobil | **%70** | Tailwind kullanılıyor; layout implementasyonlarda temel responsive var |
+| **Genel Frontend** | **~%65** | Altyapı hazır; UI implementasyonu bekliyor |
 
 ---
 
@@ -308,13 +354,11 @@ Durum etiketleri: `[x]` Tamamlandı · `[-]` Devam ediyor · `[ ]` Yapılmadı �
 
 | Sprint | Kapsam | Durum |
 |--------|--------|-------|
-| 1 | Phase 0 tamamı + Database katmanı + Ana sayfa public editor | Phase 0 ✅ + DB ✅ tamamlandı, editor devam ediyor |
-| 2 | Auth + Quiz CRUD | - |
-| 3 | Coding question + test case + execution (sınav modu) | - |
-| 4 | Exam session + süre yönetimi + dynamic form | - |
-| 5 | Ek soru tipleri + submission versiyonlama | - |
-| 6 | SignalR hub + canlı izleme | - |
-| 7 | Admin müdahale + anti-cheat events | - |
-| 8 | Replay sistemi | - |
-| 9 | Analitik dashboard | - |
-| 10 | Perf, güvenlik, E2E testler, release hazırlığı | - |
+| 1 | Phase 0 + Database katmanı + Frontend UI | Phase 0 ✅ + DB ✅ + Frontend UI ✅ |
+| 2 | Backend Auth + Execute endpoints | - |
+| 3 | Backend Quiz CRUD + Question/TestCase | - |
+| 4 | Backend Session + Submit + Puanlama | - |
+| 5 | Backend Admin endpoints + SignalR Hub | - |
+| 6 | Frontend-Backend entegrasyonu + SignalR bağlantısı | - |
+| 7 | Anti-cheat tam implementasyon + Replay diff capture | - |
+| 8 | Perf, güvenlik, E2E testler, release hazırlığı | - |
