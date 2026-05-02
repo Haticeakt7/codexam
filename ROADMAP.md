@@ -541,13 +541,13 @@ Quiz Sahibi / Admin (JWT) → SignalR Hub → subscribe quiz:{id}
 
 | Teknoloji | Kullanım |
 |-----------|---------|
-| React 18 + TypeScript 5 | UI framework |
-| Vite 5 | Build tool |
+| React 19 + TypeScript 6 | UI framework |
+| Vite 8 | Build tool |
 | TailwindCSS 3 | Stil + CSS variable tema sistemi |
 | Monaco Editor (`@monaco-editor/react`) | Kod editörü |
-| Zustand | Global state (auth, editor, tema, dil) |
+| Zustand 5 | Global state (auth, editor, tema, dil, toast) |
 | TanStack Query v5 | Server state, cache |
-| React Router v6 | Routing + korumalı rotalar |
+| React Router v7 | Routing + korumalı rotalar |
 | Axios | HTTP client + interceptor |
 | `@microsoft/signalr` | Realtime bağlantı |
 | `i18next` + `react-i18next` | Çoklu dil (TR/EN) |
@@ -555,12 +555,18 @@ Quiz Sahibi / Admin (JWT) → SignalR Hub → subscribe quiz:{id}
 
 **Zustand Store Yapısı:**
 ```
-authStore      → user, token, role, login/logout
-editorStore    → language, code, output, isRunning
-examStore      → sessionToken, session, timeRemaining, antiCheatEvents
+authStore      → user, accessToken, isAuthenticated, logout
+editorStore    → language, code, stdin, output, isRunning, STARTERS
+examStore      → sessionToken, sessionId, answers, antiCheatEvents, isLocked
 themeStore     → uiTheme (light/dark), monacoTheme, persist localStorage
 i18nStore      → locale (tr/en), i18next sync, persist localStorage
+toastStore     → toast queue, add/dismiss
 ```
+
+**Frontend Durum Notu (2026-04-29):**
+Altyapı katmanı (stores, hooks, API client, layouts, UI bileşenler, routing) tamamlanmıştır.
+21 sayfa dosyası iskelet olarak mevcuttur: her dosya bağlantı noktaları (hook'lar, store'lar, SignalR event'leri) ve ASCII layout diyagramı ile belgelenmiş; `return null` ile bitiyor.
+UI implementasyonu Emir (designer) tarafından yapılacaktır.
 
 ### Backend
 
@@ -834,29 +840,39 @@ Seed data, demo kullanıcıları, örnek quiz ve kod senaryoları, README son ha
 
 **Hedef:** Hem frontend hem backend compile olan boş proje olarak ayağa kalkar.
 
-**Frontend**
-- [ ] `frontend/` – Vite + React 18 + TypeScript 5 kurulumu (`npm create vite`)
-- [ ] TailwindCSS v3 + PostCSS kurulumu ve `tailwind.config.ts` düzenlenmesi
-- [ ] CSS variable tabanlı tema sistemi: `--color-bg`, `--color-surface`, `--color-primary` tanımları
-- [ ] `themeStore` (Zustand): `uiTheme`, `monacoTheme`, localStorage persist
-- [ ] `i18next` + `react-i18next` + `i18next-browser-languagedetector` kurulumu
-- [ ] `src/locales/tr.json` ve `src/locales/en.json` dosyalarını oluştur (boş şema)
-- [ ] React Router v6 kurulumu; `routes/index.tsx` iskelet rotalar
-- [ ] ESLint + Prettier + TypeScript strict mode konfigürasyonu
+**Frontend** ✅ TAMAMLANDI
+- [x] `frontend/` – Vite 8 + React 19 + TypeScript 6 kurulumu
+- [x] TailwindCSS v3 + PostCSS + CSS variable tema sistemi
+- [x] `themeStore`, `i18nStore`, `authStore`, `editorStore`, `examStore`, `toastStore`
+- [x] `i18next` + `react-i18next` + dil dosyaları (tr/en)
+- [x] React Router v7 + PrivateRoute + GuestRoute
+- [x] ESLint + Prettier + TypeScript strict mode
+- [x] 21 iskelet sayfa + 4 layout + 14 UI bileşen
+- [x] API katmanı: Axios + interceptor + hooks + demo mock adapter
 
-**Backend**
-- [ ] `api/` – ASP.NET Core 8 Web API solution ve proje oluştur (`dotnet new`)
-- [ ] Klasör yapısını kur: `Controllers/`, `Application/`, `Domain/`, `Infrastructure/`, `Hubs/`
-- [ ] EF Core 8 + Npgsql paketlerini ekle
-- [ ] `AppDbContext` sınıfını oluştur; `appsettings.json`'a connection string ekle
-- [ ] Serilog kurulumu + request logging middleware
-- [ ] CORS konfigürasyonu (frontend origin'e izin ver)
-- [ ] `GET /api/health` endpoint'i (docker health check için)
+**Backend** ✅ İSKELET TAMAMLANDI
+- [x] `api/` – ASP.NET Core 8 Web API (Clean Architecture)
+- [x] EF Core 8 + Npgsql + snake_case + 12 tablo migration
+- [x] Serilog bootstrap + request logging + dosya sink
+- [x] FluentValidation auto validation (validator sınıfları henüz yazılmadı)
+- [x] JWT Bearer auth + SignalR query param token desteği
+- [x] CORS (`Cors:AllowedOrigins` appsettings)
+- [x] AspNetCoreRateLimit in-memory + 4 kural (execute, login, register, event)
+- [x] Hangfire Redis backend (4 worker, execution kuyruğu)
+- [x] Swagger (`/swagger` sadece Development'ta)
+- [x] `RequireAdmin` + `RequireUser` politikaları
+- [x] 7 Controller (Auth, Execute, Quizzes, Questions, Sessions, Submissions, Admin)
+- [x] 7 Application Interface + DTO sınıfları
+- [x] 7 Infrastructure Service stub + DI kayıtları
+- [x] `GET /api/health` + `GET /api/health/db`
+- [ ] Service implementasyonları (Auth → Quiz → Question → Session → Execute)
+- [ ] `SessionTokenMiddleware`, `ExceptionHandlerMiddleware`, `MonitorHub`
+- [ ] `QuizOwnerRequirement` handler + validator sınıfları
 
-**Altyapı**
-- [ ] `docker-compose.yml`'e api ve frontend (dev) servislerini ekle
-- [ ] Nginx `default.conf` ile `/api/*` ve `/` yönlendirmelerini yaz
-- [ ] `docker compose up` çalıştır; tüm container'ların sağlıklı başladığını doğrula
+**Altyapı** ✅ TAMAMLANDI
+- [x] `docker-compose.yml` + `docker-compose.dev.yml`
+- [x] Nginx reverse proxy + SPA routing + security headers
+- [x] `make up` → 6 servis sağlıklı (postgres, redis, api, worker, frontend, nginx)
 
 ---
 
@@ -864,23 +880,23 @@ Seed data, demo kullanıcıları, örnek quiz ve kod senaryoları, README son ha
 
 **Hedef:** Kullanıcı tablosu ve şifreleme altyapısı hazır olur.
 
-**Backend**
-- [ ] `User` entity: `Id (uuid)`, `Email`, `PasswordHash`, `DisplayName`, `Role (Admin|User)`, `Status`, `CreatedAt`, `UpdatedAt`, `DeletedAt`
-- [ ] `Role` enum tanımı (`Admin`, `User`)
-- [ ] `AppDbContext`'e `Users` DbSet ekle
-- [ ] İlk EF Core migration'ı oluştur ve uygula (`dotnet ef migrations add InitialCreate`)
-- [ ] BCrypt.Net kurulumu; `PasswordService` sınıfı (hash + verify)
-- [ ] `POST /api/auth/register` endpoint iskelet (FluentValidation kuralları dahil)
+**Backend** ✅ VERİ KATMANI TAMAMLANDI
+- [x] `User` entity + 12 tablo migration (InitialCreate 2026-04-25)
+- [x] `Role` enum: `Admin`, `User`
+- [x] `AppDbContext` + EF Core snake_case konfigürasyonu
+- [x] BCrypt.Net kurulumu
+- [x] `POST /api/auth/register` endpoint tanımlandı (AuthController)
+- [ ] `AuthService.RegisterAsync` implementasyonu — BCrypt hash + User kaydet
+- [ ] `AuthService.LoginAsync` implementasyonu — JWT üret + refresh token
 
-**Frontend**
-- [ ] `authStore` (Zustand): `user`, `accessToken`, `role`, `isAuthenticated`, `login`, `logout` aksiyonları
-- [ ] `/login` sayfası: email + şifre formu, validasyon mesajları
-- [ ] `/register` sayfası: display name + email + şifre + onay formu
-- [ ] Axios instance oluştur; base URL konfigürasyonu
+**Frontend** ✅ TAMAMLANDI (iskelet)
+- [x] `authStore` (Zustand): user, accessToken, isAuthenticated, logout
+- [x] `/login` + `/register` iskelet sayfaları (hook bağlantıları belgelenmiş)
+- [x] Axios instance + JWT interceptor + refresh retry queue
 
-**Altyapı**
-- [ ] PostgreSQL container volume'unu ve kullanıcı/db ayarlarını doğrula
-- [ ] Migration'ın container içinde çalıştığını test et
+**Altyapı** ✅ TAMAMLANDI
+- [x] PostgreSQL container volume + user/db ayarları
+- [x] Migration container içinde otomatik çalışıyor (`MigrateAsync` startup'ta)
 
 ---
 

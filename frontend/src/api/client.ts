@@ -1,10 +1,23 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { useExamStore } from "@/stores/examStore";
+import { mockAdapter } from "@/api/mock/adapter";
+
+const IS_DEMO = import.meta.env.VITE_DEMO_MODE === "true";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "/api",
+  baseURL: BASE_URL,
   timeout: 15_000,
+  ...(IS_DEMO ? { adapter: mockAdapter } : {}),
+});
+
+// Bypasses client's request/response interceptors — used only for token refresh
+// to avoid attaching stale auth headers and prevent interceptor re-entry loops.
+const refreshClient = axios.create({
+  baseURL: BASE_URL,
+  timeout: 15_000,
+  ...(IS_DEMO ? { adapter: mockAdapter } : {}),
 });
 
 client.interceptors.request.use((config) => {
@@ -51,7 +64,7 @@ client.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshRes = await axios.post("/api/auth/refresh", {
+        const refreshRes = await refreshClient.post("/auth/refresh", {
           refreshToken: localStorage.getItem("codexam_refresh"),
         });
         const { accessToken, refreshToken } = refreshRes.data;
