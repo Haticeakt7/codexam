@@ -1,7 +1,5 @@
 import { create } from "zustand";
 
-export type Language = "python" | "javascript" | "cpp";
-
 export type ExecutionStatus =
   | "Pending"
   | "Running"
@@ -18,20 +16,24 @@ export interface ExecutionOutput {
   memKb: number | null;
 }
 
-export const STARTERS: Record<Language, string> = {
+// Fallback starter code for known languages when backend is unavailable
+export const FALLBACK_STARTERS: Record<string, string> = {
   python: 'print("Hello, World!")',
   javascript: 'console.log("Hello, World!");',
   cpp: '#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}',
+  c: '#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}',
+  java: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
+  go: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
 };
 
 interface EditorState {
-  language: Language;
+  language: string;
   code: string;
   stdin: string;
   output: ExecutionOutput | null;
   isRunning: boolean;
 
-  setLanguage: (lang: Language) => void;
+  setLanguage: (lang: string, defaultCode?: string) => void;
   setCode: (code: string) => void;
   setStdin: (stdin: string) => void;
   setOutput: (output: ExecutionOutput | null) => void;
@@ -41,13 +43,17 @@ interface EditorState {
 
 export const useEditorStore = create<EditorState>((set) => ({
   language: "python",
-  code: STARTERS.python,
+  code: FALLBACK_STARTERS.python,
   stdin: "",
   output: null,
   isRunning: false,
 
-  setLanguage: (language) =>
-    set({ language, code: STARTERS[language], output: null }),
+  setLanguage: (language, defaultCode) =>
+    set({
+      language,
+      code: defaultCode ?? FALLBACK_STARTERS[language] ?? "// Start coding here\n",
+      output: null,
+    }),
 
   setCode: (code) => set({ code }),
   setStdin: (stdin) => set({ stdin }),

@@ -19,9 +19,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         b.Property(u => u.Status).HasMaxLength(10).HasDefaultValue("active").IsRequired();
         b.Property(u => u.RefreshToken).HasMaxLength(512);
         b.Property(u => u.RefreshTokenExpiresAt).HasColumnType("timestamp with time zone");
+        b.Property(u => u.SecurityStamp).HasDefaultValueSql("gen_random_uuid()").IsRequired();
         b.Property(u => u.CreatedAt).HasColumnType("timestamp with time zone").IsRequired();
         b.Property(u => u.UpdatedAt).HasColumnType("timestamp with time zone").IsRequired();
         b.Property(u => u.DeletedAt).HasColumnType("timestamp with time zone");
+        b.Property(u => u.PreferencesJson);  // nullable, no max length — free-form JSON text
 
         b.HasIndex(u => u.Email).IsUnique();
         b.HasIndex(u => u.DeletedAt)

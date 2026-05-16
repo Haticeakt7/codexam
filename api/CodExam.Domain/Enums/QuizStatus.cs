@@ -4,5 +4,7 @@ public enum QuizStatus
 {
     Draft,
     Active,
-    Ended
+    Ended,
+    Published,   // validated + scheduled, awaiting StartsAt
+    Archived     // manually archived
 }

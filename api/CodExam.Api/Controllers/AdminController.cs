@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CodExam.Application.DTOs.Admin;
 using CodExam.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,8 @@ public class AdminController(
     IAdminService   adminService,
     ISessionService sessionService) : ControllerBase
 {
+    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
     {
@@ -58,6 +61,13 @@ public class AdminController(
         return NoContent();
     }
 
+    [HttpDelete("quizzes")]
+    public async Task<IActionResult> BulkDeleteQuizzes([FromBody] List<Guid> ids)
+    {
+        await adminService.BulkDeleteQuizzesAsync(ids);
+        return NoContent();
+    }
+
     [HttpGet("sessions")]
     public async Task<IActionResult> GetSessions()
     {
@@ -70,5 +80,29 @@ public class AdminController(
     {
         await sessionService.ForceEndSessionAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("user-sessions")]
+    public async Task<IActionResult> GetUserSessions()
+    {
+        var result = await adminService.GetUserSessionsAsync();
+        return Ok(result);
+    }
+
+    [HttpPost("user-sessions/{userId:guid}/revoke")]
+    public async Task<IActionResult> RevokeUserSession(Guid userId)
+    {
+        if (userId == CurrentUserId)
+            return BadRequest(new { error = "Cannot revoke your own session." });
+
+        await adminService.RevokeUserSessionAsync(userId);
+        return NoContent();
+    }
+
+    [HttpGet("logs")]
+    public async Task<IActionResult> GetSystemLogs([FromQuery] string? source, [FromQuery] int limit = 200)
+    {
+        var result = await adminService.GetSystemLogsAsync(source, Math.Min(limit, 500));
+        return Ok(result);
     }
 }

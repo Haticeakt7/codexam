@@ -4,7 +4,7 @@ import {
   type CreateQuizRequest,
   type UpdateQuizRequest,
 } from "@/api/quizzes";
-import { questionsApi, type CreateQuestionRequest, type CreateTestCaseRequest } from "@/api/questions";
+import { questionsApi, type CreateQuestionRequest, type UpdateQuestionRequest, type CreateTestCaseRequest } from "@/api/questions";
 
 export function useMyQuizzes() {
   return useQuery({
@@ -26,6 +26,19 @@ export function useQuizInfo(id: string) {
     queryKey: ["quiz-info", id],
     queryFn:  () => quizzesApi.getInfo(id),
     enabled:  !!id,
+    refetchInterval: (query) =>
+      query.state.data?.status === "Published" ? 15_000 : false,
+  });
+}
+
+export function useQuizByToken(token: string) {
+  return useQuery({
+    queryKey: ["quiz-token", token],
+    queryFn:  () => quizzesApi.getByToken(token),
+    enabled:  !!token,
+    retry:    1,
+    refetchInterval: (query) =>
+      query.state.data?.status === "Published" ? 15_000 : false,
   });
 }
 
@@ -41,7 +54,10 @@ export function useUpdateQuiz(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateQuizRequest) => quizzesApi.update(id, data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ["quiz", id] }),
+    onSuccess:  () => {
+      qc.invalidateQueries({ queryKey: ["quiz", id] });
+      qc.invalidateQueries({ queryKey: ["quizzes"] });
+    },
   });
 }
 
@@ -57,7 +73,11 @@ export function usePublishQuiz() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => quizzesApi.publish(id),
-    onSuccess:  (_, id) => qc.invalidateQueries({ queryKey: ["quiz", id] }),
+    onSuccess:  (_, id) => {
+      qc.invalidateQueries({ queryKey: ["quiz", id] });
+      qc.invalidateQueries({ queryKey: ["quiz-info", id] });
+      qc.invalidateQueries({ queryKey: ["quizzes"] });
+    },
   });
 }
 
@@ -75,7 +95,19 @@ export function useCreateQuestion(quizId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateQuestionRequest) => questionsApi.createInQuiz(quizId, data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ["questions", quizId] }),
+    onSuccess:  () => {
+      qc.invalidateQueries({ queryKey: ["questions", quizId] });
+      qc.invalidateQueries({ queryKey: ["quiz", quizId] });
+    },
+  });
+}
+
+export function useUpdateQuestion(quizId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateQuestionRequest }) =>
+      questionsApi.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["questions", quizId] }),
   });
 }
 
@@ -83,7 +115,10 @@ export function useDeleteQuestion(quizId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => questionsApi.remove(id),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ["questions", quizId] }),
+    onSuccess:  () => {
+      qc.invalidateQueries({ queryKey: ["questions", quizId] });
+      qc.invalidateQueries({ queryKey: ["quiz", quizId] });
+    },
   });
 }
 

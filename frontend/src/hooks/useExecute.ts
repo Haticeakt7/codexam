@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { executeApi, type ExecuteRequest } from "@/api/execute";
 import { useEditorStore } from "@/stores/editorStore";
+import type { SupportedLanguage } from "@/api/types";
+
+const FALLBACK_LANGUAGES: SupportedLanguage[] = [
+  { id: "python",     label: "Python 3", monacoLanguage: "python",     defaultCode: 'print("Hello, World!")' },
+  { id: "javascript", label: "Node.js",  monacoLanguage: "javascript", defaultCode: 'console.log("Hello, World!");' },
+  { id: "cpp",        label: "C++",      monacoLanguage: "cpp",        defaultCode: '#include <iostream>\nusing namespace std;\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}' },
+];
+
+const normalizeLanguages = (data: SupportedLanguage[] | unknown): SupportedLanguage[] => {
+  if (Array.isArray(data)) return data as SupportedLanguage[];
+  const nested = (data as { data?: unknown })?.data;
+  return Array.isArray(nested) ? (nested as SupportedLanguage[]) : FALLBACK_LANGUAGES;
+};
+
+export function useLanguages() {
+  return useQuery<SupportedLanguage[]>({
+    queryKey:        ["languages"],
+    queryFn:         async () => normalizeLanguages(await executeApi.getLanguages()),
+    staleTime:       Infinity,
+    placeholderData: FALLBACK_LANGUAGES,
+    retry:           1,
+  });
+}
 
 export function useRunCode() {
   const [jobId, setJobId] = useState<string | null>(null);

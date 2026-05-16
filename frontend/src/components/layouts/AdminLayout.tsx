@@ -2,49 +2,13 @@
 // AdminLayout – Admin Paneli Kabuğu
 // KULLANIMLAR: /admin/*
 // ==========================================================
-//
-// AMAÇ:
-//   DashboardLayout'a benzer sol sidebar + içerik yapısı, ancak Admin'e özel
-//   navigasyon linkleri ve "Admin" badge'i ile ayrışır.
-//   Bu layout'u görebilmek için kullanıcının role=Admin olması gerekir
-//   (PrivateRoute seviyesinde kontrol edilir).
-//
-// PROPS:
-//   - children: ReactNode → sayfa içeriği
-//
-// BAĞLI STORE'LAR:
-//   - useAuthStore() → user (displayName, email), logout
-//   - useThemeStore() → uiTheme, toggleTheme
-//
-// SIDEBAR TASARIM (w-56, bg-surface, border-r):
-//
-//   ┌──────────────────┐
-//   │ CodExam  [Admin] │  h-14, border-b, "Admin" badge → bg-danger/10 text-danger
-//   ├──────────────────┤
-//   │ ◈ İstatistikler  │  NavLink (end=true için /admin tam eşleşme)
-//   │ ◉ Kullanıcılar   │
-//   │ ▤ Quiz'ler       │
-//   │ ◌ Oturumlar      │
-//   │ ⊞ Sistem Logları │
-//   ├──────────────────┤
-//   │ Admin User       │  bg-surface2 card
-//   │ admin@mail.com   │
-//   │ [☀/☾]  [Çıkış]  │
-//   └──────────────────┘
-//
-//   - Aktif/pasif NavLink stilleri DashboardLayout ile aynı
-//   - "Admin" badge: küçük, uppercase, bg-danger/10 text-danger, rounded
-//
-// İÇERİK ALANI:
-//   flex-1, overflow-y-auto, p-6
-//
-// ==========================================================
 
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
+import { useI18nStore } from "@/stores/i18nStore";
 
 const NAV_ITEMS = [
   { to: "/admin",          label: "admin.stats",    icon: "◈", end: true },
@@ -63,70 +27,147 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { uiTheme, toggleTheme } = useThemeStore();
+  const { locale: uiLang, setLocale: setUiLang } = useI18nStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  return (
-    <div className="flex h-screen bg-bg text-text">
-      {/* Sidebar */}
-      <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface">
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
-          <Link to="/" className="text-base font-bold text-primary">
-            CodExam
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const sidebarContent = (
+    <>
+      {/* Brand */}
+      <div className="flex h-14 items-center justify-between border-b border-border px-4 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" onClick={closeSidebar}>
+            <img src="/icon.png" alt="logo" className="h-7 w-7 rounded-md" />
+            <span className="text-base font-bold text-primary">CodExam</span>
           </Link>
           <span className="rounded bg-danger/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger">
             Admin
           </span>
         </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={closeSidebar}
+          className="lg:hidden p-2 rounded-lg text-muted hover:bg-surface2 hover:text-text transition-colors"
+          aria-label="Menüyü kapat"
+        >
+          ✕
+        </button>
+      </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  isActive
-                    ? "bg-primary/10 font-medium text-primary"
-                    : "text-muted hover:bg-surface2 hover:text-text"
-                }`
-              }
-            >
-              <span className="text-base leading-none">{item.icon}</span>
-              {t(item.label)}
-            </NavLink>
-          ))}
-        </nav>
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            onClick={closeSidebar}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-primary/10 font-medium text-primary"
+                  : "text-muted hover:bg-surface2 hover:text-text"
+              }`
+            }
+          >
+            <span className="text-base leading-none w-5 text-center">{item.icon}</span>
+            {t(item.label)}
+          </NavLink>
+        ))}
+      </nav>
 
-        <div className="border-t border-border p-3">
-          <div className="mb-2 rounded-lg bg-surface2 px-3 py-2">
-            <p className="truncate text-sm font-medium text-text">{user?.displayName}</p>
-            <p className="truncate text-xs text-muted">{user?.email}</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={toggleTheme}
-              className="flex-1 rounded-lg border border-border py-1.5 text-xs text-muted transition-colors hover:bg-surface2 hover:text-text"
-            >
-              {uiTheme === "dark" ? "☀" : "☾"}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex-1 rounded-lg border border-border py-1.5 text-xs text-muted transition-colors hover:bg-surface2 hover:text-text"
-            >
-              {t("nav.logout")}
-            </button>
-          </div>
+      {/* Footer */}
+      <div className="border-t border-border p-3 flex-shrink-0">
+        <Link
+          to="/profile"
+          onClick={closeSidebar}
+          className="mb-3 block rounded-lg bg-surface2 px-3 py-2 hover:bg-border transition-colors"
+        >
+          <p className="truncate text-sm font-medium text-text">{user?.displayName}</p>
+          <p className="truncate text-xs text-muted">{user?.email}</p>
+        </Link>
+        <div className="mb-2 flex gap-2">
+          <button
+            onClick={toggleTheme}
+            className="flex-1 rounded-lg border border-border py-2 text-sm text-muted transition-colors hover:bg-surface2 hover:text-text"
+            aria-label="Toggle theme"
+          >
+            {uiTheme === "dark" ? "☀" : "☾"}
+          </button>
+          <button
+            onClick={() => setUiLang(uiLang === "tr" ? "en" : "tr")}
+            className="flex-1 rounded-lg border border-border py-2 text-xs font-semibold text-muted transition-colors hover:bg-surface2 hover:text-text"
+          >
+            {uiLang === "tr" ? "🇹🇷 TR" : "🇬🇧 EN"}
+          </button>
         </div>
+        <button
+          onClick={handleLogout}
+          className="w-full rounded-lg border border-border/50 py-2 text-sm font-semibold text-muted transition-colors hover:border-danger/40 hover:bg-danger/10 hover:text-danger"
+        >
+          {t("nav.logout")}
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex h-screen bg-bg text-text overflow-hidden">
+
+      {/* ── Desktop sidebar (lg+) ─────────────────────────────── */}
+      <aside className="hidden lg:flex w-56 shrink-0 flex-col border-r border-border bg-surface">
+        {sidebarContent}
       </aside>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      {/* ── Mobile sidebar overlay ────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Mobile sidebar drawer ─────────────────────────────── */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-surface transition-transform duration-300 lg:hidden ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* ── Content area ─────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+
+        {/* Mobile top bar */}
+        <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface2 hover:text-text transition-colors"
+            aria-label="Menüyü aç"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <rect y="3" width="20" height="2" rx="1"/>
+              <rect y="9" width="20" height="2" rx="1"/>
+              <rect y="15" width="20" height="2" rx="1"/>
+            </svg>
+          </button>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/icon.png" alt="logo" className="h-7 w-7 rounded-md" />
+            <span className="text-base font-bold text-primary">CodExam</span>
+            <span className="rounded bg-danger/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-danger">Admin</span>
+          </Link>
+          <div className="w-10" aria-hidden="true" />
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

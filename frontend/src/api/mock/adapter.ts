@@ -135,6 +135,7 @@ route("POST", /^\/quizzes$/, (_url, _m, config) => {
     antiCheatOptions: (body.antiCheatOptions as Quiz["antiCheatOptions"]) ?? { tabSwitch: false, fullscreen: false, clipboard: false },
     formSchema: (body.formSchema as Quiz["formSchema"]) ?? [],
     accessCode: body.accessCode,
+    participationToken: uid(),
     participantCount: 0,
     questionCount: 0,
     createdAt: new Date().toISOString(),
@@ -234,7 +235,7 @@ route("DELETE", /^\/questions\/([^/]+)$/, (_url, m) => {
 });
 
 route("PATCH", /^\/questions\/([^/]+)\/order$/, (_url, m, config) => {
-  const newOrder = parseBody(config) as number;
+  const newOrder = parseBody(config) as unknown as number;
   for (const qs of Object.values(questions)) {
     const q = qs.find((x) => x.id === m[1]);
     if (q) { q.orderNo = newOrder; return q; }

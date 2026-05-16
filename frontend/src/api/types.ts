@@ -34,7 +34,7 @@ export interface LoginResponse {
 
 // ---------- Quiz ----------
 
-export type QuizStatus   = "Draft" | "Active" | "Ended";
+export type QuizStatus   = "Draft" | "Published" | "Active" | "Ended" | "Archived";
 export type QuizMode     = "RealTime" | "FreeStyle";
 export type QuestionType =
   | "Coding"
@@ -48,6 +48,7 @@ export interface FormField {
   label: string;
   type: "text" | "number" | "email";
   required: boolean;
+  isIdentity?: boolean;
 }
 
 export interface AntiCheatOptions {
@@ -66,10 +67,13 @@ export interface Quiz {
   antiCheatOptions: AntiCheatOptions;
   formSchema: FormField[];
   accessCode?: string;
+  participationToken: string;
   participantCount: number;
   questionCount: number;
   createdAt: string;
   publishedAt?: string;
+  startsAt?: string;
+  endsAt?: string;
 }
 
 export interface QuizInfo {
@@ -78,9 +82,12 @@ export interface QuizInfo {
   description?: string;
   durationMinutes: number;
   questionCount: number;
+  mode: QuizMode;
   formSchema: FormField[];
   antiCheatOptions: AntiCheatOptions;
   status: QuizStatus;
+  startsAt?: string;
+  endsAt?: string;
 }
 
 // ---------- Question ----------
@@ -90,6 +97,38 @@ export interface TestCase {
   input: string;
   expectedOutput: string;
   isVisible: boolean;
+}
+
+/** Stable choice object used in MCQ questions (new schema) */
+export interface McqChoice {
+  id: string;
+  text: string;
+}
+
+// Per-type option shapes (used for type-safe access in components)
+export interface CodingOptions {
+  allowedLanguages?: string[];
+  starterCode?: string;
+}
+export interface McqOptions {
+  choices: McqChoice[];
+  correctIds: string[];
+  multiSelect?: boolean;
+}
+export interface OutputPredictionOptions {
+  codeBlock: string;
+  codeLanguage?: string;
+  expectedOutput?: string;
+  matchMode?: "trimmed" | "ignoreWhitespace" | "exact";
+}
+export interface BugFixOptions {
+  buggyCode?: string;
+  correctCode?: string;
+  codeLanguage?: string;
+}
+export interface ShortAnswerOptions {
+  acceptedAnswers?: string[];
+  matchMode?: "exact" | "exactIgnoreCase" | "contains";
 }
 
 export interface Question {
@@ -122,7 +161,24 @@ export interface ExecutionResult {
   memoryUsedKb?: number;
 }
 
+export interface SupportedLanguage {
+  id: string;
+  label: string;
+  monacoLanguage: string;
+  defaultCode: string;
+}
+
 // ---------- Session ----------
+
+export interface SubmitResponse {
+  submissionId: string;
+  score: number;
+  maxScore: number;
+  /** "Passed" | "Failed" | "Pending" */
+  status: string;
+  /** false for Coding/BugFix — graded asynchronously */
+  isGraded: boolean;
+}
 
 export interface JoinQuizResponse {
   sessionToken: string;
@@ -132,6 +188,44 @@ export interface JoinQuizResponse {
   questions: Question[];
 }
 
+// ---------- User Preferences ----------
+
+export interface UserPreferences {
+  editorTheme: string;   // "vs" | "vs-dark" | "hc-black"
+  fontSize: number;      // 8–32
+  layoutJson: string;    // JSON string for panel layout
+}
+
+// ---------- Session Submissions (participant answer detail) ----------
+
+export interface ViolationEntry {
+  eventType: string;
+  severity: string;
+  timestamp: string;
+}
+
+export interface SessionSubmission {
+  submissionId: string;
+  questionId: string;
+  questionTitle: string;
+  questionType: string;
+  questionPoints: number;
+  language: string;
+  code: string;
+  score: number;
+  status: string;
+  submittedAt: string;
+  hasReplay: boolean;
+  violations: ViolationEntry[];
+}
+
+export interface SessionSubmissionsResponse {
+  sessionId: string;
+  formData: Record<string, unknown>;
+  startedAt: string;
+  submissions: SessionSubmission[];
+}
+
 // ---------- Results / Replay ----------
 
 export interface ReplayDiffEntry {
@@ -139,9 +233,19 @@ export interface ReplayDiffEntry {
   diff: string;
 }
 
+export interface ReplayQuestionEntry {
+  submissionId: string;
+  questionId: string;
+  questionTitle: string;
+  questionType: string;
+  orderNo: number;
+  diffs: ReplayDiffEntry[];
+}
+
 export interface ReplayData {
   submissionId: string;
   diffs: ReplayDiffEntry[];
+  questions: ReplayQuestionEntry[];
 }
 
 export interface ParticipantResult {
@@ -150,6 +254,7 @@ export interface ParticipantResult {
   totalScore: number;
   maxScore: number;
   completedQuestions: number;
+  violationCount: number;
   submittedAt: string;
 }
 
@@ -185,6 +290,15 @@ export interface AdminUser {
   updatedAt?: string;
 }
 
+export interface AdminSessionEvent {
+  eventType: string;
+  severity: string;
+  timestamp: string;
+  message?: string;
+  questionId?: string;
+  questionTitle?: string;
+}
+
 export interface AdminSession {
   id: string;
   quizId: string;
@@ -195,4 +309,37 @@ export interface AdminSession {
   finishedAt?: string;
   isActive: boolean;
   isLocked: boolean;
+  totalScore: number;
+  antiCheatEventCount: number;
+  antiCheatEvents: AdminSessionEvent[];
+  warnings: AdminSessionEvent[];
+  // live fields (populated via SignalR)
+  latestCode?: string;
+  latestLanguage?: string;
+  currentQuestionIndex?: number;
+}
+
+export interface FinishResponse {
+  sessionId: string;
+  totalScore: number;
+  maxScore: number;
+  finishedAt: string;
+  submittedQuestions: number;
+}
+
+export interface AdminUserSession {
+  userId: string;
+  email: string;
+  displayName: string;
+  role: "Admin" | "User";
+  sessionExpiresAt: string;
+}
+
+export interface SystemLog {
+  id: string;
+  sourceService: string;
+  errorTitle: string;
+  errorMessage: string;
+  stackTrace?: string;
+  createdAt: string;
 }

@@ -5,5 +5,7 @@ public enum EventType
     TabSwitch,
     FullscreenExit,
     ClipboardAttempt,
-    Keydown
+    Keydown,
+    PageRefresh,
+    Warned
 }

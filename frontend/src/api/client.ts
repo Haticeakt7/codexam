@@ -1,7 +1,9 @@
 import axios from "axios";
+import i18next from "i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useExamStore } from "@/stores/examStore";
 import { mockAdapter } from "@/api/mock/adapter";
+import { toast } from "@/stores/toastStore";
 
 const IS_DEMO = import.meta.env.VITE_DEMO_MODE === "true";
 const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
@@ -49,8 +51,11 @@ client.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status as number | undefined;
+    const backendMessage = error.response?.data?.error as string | undefined;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 401 with active session: attempt token refresh
+    if (status === 401 && useAuthStore.getState().accessToken && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -80,6 +85,24 @@ client.interceptors.response.use(
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
+      }
+    }
+
+    // Global error toast — skip 401 (login form handles inline, refresh handles session)
+    // and skip requests that opt out via _skipErrorToast config flag
+    if (status !== 401 && !originalRequest._skipErrorToast) {
+      if (!error.response) {
+        toast.error(i18next.t("errors.network"));
+      } else if (status === 403) {
+        toast.error(backendMessage || i18next.t("errors.forbidden"));
+      } else if (status === 404) {
+        toast.error(backendMessage || i18next.t("errors.notFound"));
+      } else if (status === 422) {
+        toast.error(backendMessage || i18next.t("errors.unprocessable"));
+      } else if (status && status >= 500) {
+        toast.error(i18next.t("errors.server"));
+      } else {
+        toast.error(backendMessage || i18next.t("errors.generic"));
       }
     }
 

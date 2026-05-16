@@ -1,5 +1,5 @@
 import client from "./client";
-import type { ReplayData, QuizResults, ReplayDiffEntry } from "./types";
+import type { ReplayData, QuizResults, ReplayDiffEntry, SessionSubmissionsResponse } from "./types";
 
 export type { ReplayDiffEntry };
 
@@ -12,4 +12,7 @@ export const submissionsApi = {
 
   getResults: (quizId: string) =>
     client.get<QuizResults>(`/quizzes/${quizId}/results`).then((r) => r.data),
+
+  getSessionSubmissions: (sessionId: string) =>
+    client.get<SessionSubmissionsResponse>(`/sessions/${sessionId}/submissions`).then((r) => r.data),
 };

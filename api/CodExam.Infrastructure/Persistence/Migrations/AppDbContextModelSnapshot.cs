@@ -18,7 +18,7 @@ namespace CodExam.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.26")
+                .HasAnnotation("ProductVersion", "8.0.27")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -203,6 +203,10 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasColumnName("metadata")
                         .HasDefaultValueSql("'{}'::jsonb");
 
+                    b.Property<Guid?>("QuestionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("question_id");
+
                     b.Property<Guid>("QuizId")
                         .HasColumnType("uuid")
                         .HasColumnName("quiz_id");
@@ -228,6 +232,9 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_exam_events_metadata");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Metadata"), "GIN");
+
+                    b.HasIndex("QuestionId")
+                        .HasDatabaseName("ix_exam_events_question_id");
 
                     b.HasIndex("SessionId")
                         .HasDatabaseName("ix_exam_events_session_id");
@@ -331,6 +338,10 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("duration_minutes");
 
+                    b.Property<DateTime?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
                     b.Property<JsonDocument>("FormSchema")
                         .IsRequired()
                         .HasColumnType("jsonb")
@@ -346,14 +357,24 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("owner_id");
 
+                    b.Property<Guid>("ParticipationToken")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("participation_token")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
 
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
+
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")
@@ -371,6 +392,10 @@ namespace CodExam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OwnerId")
                         .HasDatabaseName("ix_quizzes_owner_id");
+
+                    b.HasIndex("ParticipationToken")
+                        .IsUnique()
+                        .HasDatabaseName("ix_quizzes_participation_token");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_quizzes_status");
@@ -684,6 +709,10 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(72)")
                         .HasColumnName("password_hash");
 
+                    b.Property<string>("PreferencesJson")
+                        .HasColumnType("text")
+                        .HasColumnName("preferences_json");
+
                     b.Property<string>("RefreshToken")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -698,6 +727,12 @@ namespace CodExam.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("role");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("security_stamp")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -750,12 +785,20 @@ namespace CodExam.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CodExam.Domain.Entities.ExamEvent", b =>
                 {
+                    b.HasOne("CodExam.Domain.Entities.Question", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_exam_events_questions_question_id");
+
                     b.HasOne("CodExam.Domain.Entities.QuizSession", "Session")
                         .WithMany("ExamEvents")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_exam_events_quiz_sessions_session_id");
+
+                    b.Navigation("Question");
 
                     b.Navigation("Session");
                 });
