@@ -24,8 +24,10 @@ public class AdminSessionDto
 
 public class AdminSessionEventDto
 {
-    public string   EventType { get; set; } = "";
-    public string   Severity  { get; set; } = "";
-    public DateTime Timestamp { get; set; }
-    public string?  Message   { get; set; }
+    public string   EventType     { get; set; } = "";
+    public string   Severity      { get; set; } = "";
+    public DateTime Timestamp     { get; set; }
+    public string?  Message       { get; set; }
+    public Guid?    QuestionId    { get; set; }
+    public string?  QuestionTitle { get; set; }
 }

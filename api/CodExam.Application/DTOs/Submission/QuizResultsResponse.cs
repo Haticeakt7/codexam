@@ -17,6 +17,7 @@ public class ParticipantResult
     public int         TotalScore          { get; set; }
     public int         MaxScore            { get; set; }
     public int         CompletedQuestions  { get; set; }
+    public int         ViolationCount      { get; set; }
     public DateTime    SubmittedAt         { get; set; }
 }
 
@@ -31,6 +32,7 @@ public class SessionSubmissionsResponse
 {
     public Guid                       SessionId   { get; set; }
     public JsonElement                FormData    { get; set; }
+    public DateTime                   StartedAt   { get; set; }
     public List<SessionSubmissionDto> Submissions { get; set; } = [];
 }
 
@@ -47,4 +49,12 @@ public class SessionSubmissionDto
     public string   Status         { get; set; } = null!;
     public DateTime SubmittedAt    { get; set; }
     public bool     HasReplay      { get; set; }
+    public List<ViolationDto> Violations { get; set; } = [];
+}
+
+public class ViolationDto
+{
+    public string   EventType     { get; set; } = null!;
+    public string   Severity      { get; set; } = null!;
+    public DateTime Timestamp     { get; set; }
 }

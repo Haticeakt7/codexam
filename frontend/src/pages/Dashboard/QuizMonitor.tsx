@@ -125,9 +125,11 @@ export default function QuizMonitor() {
         prev.map((p) => {
           if (p.id !== data.sessionId) return p;
           const newEvent: AdminSessionEvent = {
-            eventType: data.eventType,
-            severity: data.severity ?? "Medium",
-            timestamp: data.timestamp,
+            eventType:     data.eventType,
+            severity:      data.severity ?? "Medium",
+            timestamp:     data.timestamp,
+            questionId:    data.questionId ?? undefined,
+            questionTitle: data.questionTitle ?? undefined,
           };
           return {
             ...p,
@@ -483,15 +485,22 @@ export default function QuizMonitor() {
                             .map((e, i) => {
                               const isHigh = e.severity === "High";
                               return (
-                                <li key={i} className="flex items-center gap-3 px-3 py-2 text-xs">
-                                  <span className="font-mono text-muted w-14 flex-shrink-0 tabular-nums">
-                                    {formatTimestamp(e.timestamp, selectedParticipant.startedAt)}
-                                  </span>
-                                  <span className={`flex-1 font-medium ${isHigh ? "text-red-500" : "text-yellow-500"}`}>
-                                    {t(`monitor.eventType.${e.eventType}`, { defaultValue: e.eventType })}
-                                  </span>
-                                  {isHigh && (
-                                    <span className="text-red-500 text-xs flex-shrink-0">{t("monitor.high")}</span>
+                                <li key={i} className="flex flex-col gap-0.5 px-3 py-2 text-xs border-b border-border last:border-0">
+                                  <div className="flex items-center gap-3">
+                                    <span className="font-mono text-muted w-14 flex-shrink-0 tabular-nums">
+                                      {formatTimestamp(e.timestamp, selectedParticipant.startedAt)}
+                                    </span>
+                                    <span className={`flex-1 font-medium ${isHigh ? "text-red-500" : "text-yellow-500"}`}>
+                                      {t(`monitor.eventType.${e.eventType}`, { defaultValue: e.eventType })}
+                                    </span>
+                                    {isHigh && (
+                                      <span className="text-red-500 text-xs flex-shrink-0">{t("monitor.high")}</span>
+                                    )}
+                                  </div>
+                                  {e.questionTitle && (
+                                    <span className="ml-[68px] text-muted text-[10px] truncate">
+                                      {t("monitor.atQuestion")}: {e.questionTitle}
+                                    </span>
                                   )}
                                 </li>
                               );

@@ -39,7 +39,7 @@ public static class InfrastructureServiceExtensions
         services.AddHangfireServer(options =>
         {
             options.WorkerCount = 8;
-            options.Queues = ["grading", "execution", "default"];
+            options.Queues = ["grading", "default"];
         });
 
         // Application service registrations

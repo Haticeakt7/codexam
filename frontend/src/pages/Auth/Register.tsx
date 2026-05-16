@@ -40,8 +40,9 @@ export default function Register() {
     <div className="flex min-h-screen items-center justify-center bg-bg p-4 text-text">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <Link to="/" className="text-3xl font-bold text-primary hover:opacity-80 transition-opacity">
-            CodExam
+          <Link to="/" className="inline-flex flex-col items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/icon.png" alt="CodExam" className="h-14 w-14 rounded-xl shadow-sm" />
+            <span className="text-2xl font-bold text-primary">CodExam</span>
           </Link>
           <p className="mt-2 text-sm text-muted">{t("auth.registerSubtitle")}</p>
         </div>

@@ -248,11 +248,21 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
         if (session == null || !session.IsActive)
             throw new InvalidOperationException("Session is invalid or inactive.");
 
+        string? questionTitle = null;
+        if (request.QuestionId.HasValue)
+        {
+            questionTitle = await db.Questions
+                .Where(q => q.Id == request.QuestionId.Value)
+                .Select(q => q.Title)
+                .FirstOrDefaultAsync();
+        }
+
         var examEvent = new ExamEvent
         {
             Id = Guid.NewGuid(),
             SessionId = session.Id,
             QuizId = quizId,
+            QuestionId = request.QuestionId,
             EventType = Enum.Parse<EventType>(request.EventType, true),
             Severity = EventSeverity.Medium,
             Timestamp = DateTime.UtcNow,
@@ -268,7 +278,9 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
             sessionId = session.Id,
             eventType = request.EventType,
             severity = "Medium",
-            timestamp = examEvent.Timestamp
+            timestamp = examEvent.Timestamp,
+            questionId = request.QuestionId,
+            questionTitle
         });
     }
 
@@ -342,6 +354,7 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
             .AsNoTracking()
             .Include(s => s.Quiz)
             .Include(s => s.ExamEvents)
+                .ThenInclude(e => e.Question)
             .Include(s => s.Submissions)
             .Where(s => s.QuizId == quizId)
             .OrderByDescending(s => s.StartedAt)
@@ -367,18 +380,20 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
                     .Where(e => e.EventType != EventType.Warned)
                     .Select(e => new AdminSessionEventDto
                     {
-                        EventType = e.EventType.ToString(),
-                        Severity = e.Severity.ToString(),
-                        Timestamp = e.Timestamp
+                        EventType     = e.EventType.ToString(),
+                        Severity      = e.Severity.ToString(),
+                        Timestamp     = e.Timestamp,
+                        QuestionId    = e.QuestionId,
+                        QuestionTitle = e.Question?.Title
                     }).ToList(),
                 Warnings = s.ExamEvents
                     .Where(e => e.EventType == EventType.Warned)
                     .Select(e => new AdminSessionEventDto
                     {
                         EventType = e.EventType.ToString(),
-                        Severity = e.Severity.ToString(),
+                        Severity  = e.Severity.ToString(),
                         Timestamp = e.Timestamp,
-                        Message = e.Metadata.RootElement.TryGetProperty("message", out var msg) ? msg.GetString() : null
+                        Message   = e.Metadata.RootElement.TryGetProperty("message", out var msg) ? msg.GetString() : null
                     }).ToList(),
                 LatestCode = snap?.Code,
                 LatestLanguage = snap?.Language,
@@ -393,6 +408,7 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
             .AsNoTracking()
             .Include(s => s.Quiz)
             .Include(s => s.ExamEvents)
+                .ThenInclude(e => e.Question)
             .Include(s => s.Submissions)
             .OrderByDescending(s => s.StartedAt)
             .ToListAsync();
@@ -417,18 +433,20 @@ public class SessionService(AppDbContext db, IMonitorNotifier monitor, IMemoryCa
                     .Where(e => e.EventType != EventType.Warned)
                     .Select(e => new AdminSessionEventDto
                     {
-                        EventType = e.EventType.ToString(),
-                        Severity = e.Severity.ToString(),
-                        Timestamp = e.Timestamp
+                        EventType     = e.EventType.ToString(),
+                        Severity      = e.Severity.ToString(),
+                        Timestamp     = e.Timestamp,
+                        QuestionId    = e.QuestionId,
+                        QuestionTitle = e.Question?.Title
                     }).ToList(),
                 Warnings = s.ExamEvents
                     .Where(e => e.EventType == EventType.Warned)
                     .Select(e => new AdminSessionEventDto
                     {
                         EventType = e.EventType.ToString(),
-                        Severity = e.Severity.ToString(),
+                        Severity  = e.Severity.ToString(),
                         Timestamp = e.Timestamp,
-                        Message = e.Metadata.RootElement.TryGetProperty("message", out var msg) ? msg.GetString() : null
+                        Message   = e.Metadata.RootElement.TryGetProperty("message", out var msg) ? msg.GetString() : null
                     }).ToList(),
                 LatestCode = snap?.Code,
                 LatestLanguage = snap?.Language,

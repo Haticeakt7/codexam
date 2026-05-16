@@ -232,3 +232,25 @@ refactor: extract quiz ownership check to policy handler
 | [docs/API.md](docs/API.md) | Endpoint listesi ve açıklamaları |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker Compose, Nginx, deploy adımları |
 | [ROADMAP.md](ROADMAP.md) | Faz bazlı geliştirme planı ve takvim |
+
+## Ekran Görüntüleri
+
+| Anasayfa | Quiz |
+|----------|------|
+| ![Anasayfa](screenshots/Anasayfa.png) | ![Quiz](screenshots/Quiz.png) |
+
+| Quizlerim Ekranı | Soru Tipleri |
+|------------------|--------------|
+| ![Quizlerim Ekranı](screenshots/Quizlerim%20Ekranı.png) | ![Soru Tipleri](screenshots/Soru%20Tipleri.png) |
+
+| Quiz Gözetmen Ekranı | Quiz Gözetmen Ekranı 2 |
+|----------------------|------------------------|
+| ![Quiz Gözetmen Ekranı](screenshots/Quiz%20Gözetmen%20Ekranı.png) | ![Quiz Gözetmen Ekranı 2](screenshots/Quiz%20Gözetmen%20Ekranı2.png) |
+
+| Gözetmen Uyarısı | Quiz Katılımcı Cevap Ekranı |
+|------------------|-----------------------------|
+| ![Gözetmen Uyarısı](screenshots/Gözetmen%20Uyarısı.png) | ![Quiz Katılımcı Cevap Ekranı](screenshots/Quiz%20Katılımcı%20Cevap%20Ekranı.png) |
+
+| Submission Replay | |
+|-------------------|-|
+| ![Submission Replay](screenshots/Submission%20Replay.png) | |

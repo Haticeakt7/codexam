@@ -193,8 +193,9 @@ export default function QuizTake() {
 
   const { mutate: finishExam, isPending: isFinishing } = useFinishExam(id!);
   const { mutate: sendSnapshot } = useCodeSnapshot(id!);
-  const hubRef           = useRef<signalR.HubConnection | null>(null);
-  const examFinishedRef  = useRef(false);
+  const hubRef              = useRef<signalR.HubConnection | null>(null);
+  const examFinishedRef     = useRef(false);
+  const currentQuestionIdRef = useRef<string | undefined>(undefined);
   // Replay buffer: captures code snapshots for replay diff persistence
   const replayBufferRef = useRef<ReplayDiffEntry[]>([]);
   const replayStartRef  = useRef<number>(Date.now());
@@ -336,7 +337,7 @@ export default function QuizTake() {
       const now = Date.now();
       if (now - lastTabSwitchMs > 500) {
         lastTabSwitchMs = now;
-        logEvent({ eventType: "TabSwitch" });
+        logEvent({ eventType: "TabSwitch", questionId: currentQuestionIdRef.current });
       }
     };
 
@@ -344,10 +345,10 @@ export default function QuizTake() {
     const onVisibility = () => { if (document.hidden) fireTabSwitch(); };
     // window blur catches Alt+Tab (app switch, including from fullscreen exit)
     const onBlur       = () => fireTabSwitch();
-    const onFullscreen = () => { if (!document.fullscreenElement && ac?.fullscreen) logEvent({ eventType: "FullscreenExit" }); };
-    const onCopy  = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", metadata: { action: "copy" } }); };
-    const onCut   = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", metadata: { action: "cut" } }); };
-    const onPaste = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", metadata: { action: "paste" } }); };
+    const onFullscreen = () => { if (!document.fullscreenElement && ac?.fullscreen) logEvent({ eventType: "FullscreenExit", questionId: currentQuestionIdRef.current }); };
+    const onCopy  = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", questionId: currentQuestionIdRef.current, metadata: { action: "copy" } }); };
+    const onCut   = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", questionId: currentQuestionIdRef.current, metadata: { action: "cut" } }); };
+    const onPaste = () => { if (ac?.clipboard) logEvent({ eventType: "ClipboardAttempt", questionId: currentQuestionIdRef.current, metadata: { action: "paste" } }); };
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
@@ -392,6 +393,11 @@ export default function QuizTake() {
       setLanguage(first.id, first.defaultCode);
     }
   }, [activeQuestionIndex, languages, language, setLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep ref in sync with current question so anti-cheat handlers always see the latest id
+  useEffect(() => {
+    currentQuestionIdRef.current = question?.id;
+  }, [question?.id]);
 
   // Auto-dismiss submit feedback
   useEffect(() => {

@@ -242,11 +242,11 @@ export const DEMO_RESULTS: Record<string, QuizResults> = {
     participantCount: 5,
     avgScore: 52,
     participants: [
-      { sessionId: "sess-ended-1", formData: { name: "Elif Şahin",  dept: "Bilgisayar Mühendisliği" }, totalScore: 70, maxScore: 70, completedQuestions: 3, submittedAt: past(93.8) },
-      { sessionId: "sess-ended-2", formData: { name: "Burak Arslan", dept: "Yazılım Mühendisliği"  }, totalScore: 60, maxScore: 70, completedQuestions: 3, submittedAt: past(94)   },
-      { sessionId: "sess-ended-3", formData: { name: "Selin Öztürk", dept: "Bilgisayar Mühendisliği"}, totalScore: 50, maxScore: 70, completedQuestions: 2, submittedAt: past(93.6) },
-      { sessionId: "sess-ended-4", formData: { name: "Tolga Aydın",  dept: "Elektrik-Elektronik"  }, totalScore: 30, maxScore: 70, completedQuestions: 2, submittedAt: past(94.2) },
-      { sessionId: "sess-ended-5", formData: { name: "Ayşe Çelik",   dept: "Bilgisayar Mühendisliği"}, totalScore: 50, maxScore: 70, completedQuestions: 3, submittedAt: past(93.7) },
+      { sessionId: "sess-ended-1", formData: { name: "Elif Şahin",  dept: "Bilgisayar Mühendisliği" }, totalScore: 70, maxScore: 70, completedQuestions: 3, violationCount: 0, submittedAt: past(93.8) },
+      { sessionId: "sess-ended-2", formData: { name: "Burak Arslan", dept: "Yazılım Mühendisliği"  }, totalScore: 60, maxScore: 70, completedQuestions: 3, violationCount: 2, submittedAt: past(94)   },
+      { sessionId: "sess-ended-3", formData: { name: "Selin Öztürk", dept: "Bilgisayar Mühendisliği"}, totalScore: 50, maxScore: 70, completedQuestions: 2, violationCount: 0, submittedAt: past(93.6) },
+      { sessionId: "sess-ended-4", formData: { name: "Tolga Aydın",  dept: "Elektrik-Elektronik"  }, totalScore: 30, maxScore: 70, completedQuestions: 2, violationCount: 1, submittedAt: past(94.2) },
+      { sessionId: "sess-ended-5", formData: { name: "Ayşe Çelik",   dept: "Bilgisayar Mühendisliği"}, totalScore: 50, maxScore: 70, completedQuestions: 3, violationCount: 0, submittedAt: past(93.7) },
     ],
     questionStats: [
       { questionId: "q-ended-1", title: "Palindrom Kontrolü",          successRate: 60 },

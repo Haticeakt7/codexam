@@ -358,7 +358,8 @@
       "ClipboardAttempt": "Clipboard Access",
       "Keydown": "Key Press",
       "PageRefresh": "Page Refresh (Terminated)"
-    }
+    },
+    "atQuestion": "Question"
   },
   "results": {
     "title": "Exam Results",
@@ -383,7 +384,10 @@
     "maxScore": "Max Score",
     "questionType": "Question Type",
     "points": "Points",
-    "replayBtn": "▶ Watch Code"
+    "replayBtn": "▶ Watch Code",
+    "violations": "Violations",
+    "violationsNone": "Violations (no violations on this question)",
+    "violationsCount": "Violations ({{count}})"
   },
   "replay": {
     "title": "Replay Player",

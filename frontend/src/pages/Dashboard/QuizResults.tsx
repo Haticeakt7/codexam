@@ -10,7 +10,7 @@ import Editor from "@monaco-editor/react";
 import { useQuizResults, useSessionSubmissions } from "@/hooks/useSessions";
 import { usePreferencesStore } from "@/stores/preferencesStore";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import type { SessionSubmission } from "@/api/types";
+import type { SessionSubmission, ViolationEntry } from "@/api/types";
 
 // ---------- Participant Answers Modal ----------
 
@@ -78,6 +78,40 @@ function ParticipantAnswersModal({ sessionId, participantName, quizId, onClose }
     return "text-muted";
   };
 
+  const formatTs = (ts: string, startedAt?: string): string => {
+    if (!startedAt) return new Date(ts).toLocaleTimeString();
+    const ms = new Date(ts).getTime() - new Date(startedAt).getTime();
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+    return `+${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const renderViolations = (violations: ViolationEntry[], startedAt?: string) => {
+    const count = violations?.length ?? 0;
+    const title = count === 0
+      ? t("results.violationsNone")
+      : t("results.violationsCount", { count });
+    return (
+      <div className="mt-3 pt-3 border-t border-border">
+        <p className={`text-xs font-bold uppercase tracking-wide mb-1.5 ${count > 0 ? "text-red-500" : "text-muted"}`}>
+          {title}
+        </p>
+        {count > 0 && (
+          <ul className="flex flex-col gap-0.5">
+            {violations.map((v, i) => (
+              <li key={i} className="flex items-center gap-2 text-xs text-muted">
+                <span className="font-mono tabular-nums w-14 flex-shrink-0">{formatTs(v.timestamp, startedAt)}</span>
+                <span className={v.severity === "High" ? "text-red-500 font-medium" : "text-yellow-600 dark:text-yellow-400 font-medium"}>
+                  {t(`monitor.eventType.${v.eventType}`, { defaultValue: v.eventType })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-3xl max-h-[90vh] flex flex-col rounded-xl border border-border bg-surface shadow-2xl">
@@ -140,6 +174,9 @@ function ParticipantAnswersModal({ sessionId, participantName, quizId, onClose }
                       <p className="text-xs font-bold text-muted uppercase tracking-wide mb-2">{t("results.answer")}</p>
                       {renderAnswer(sub)}
                     </div>
+
+                    {/* Violations */}
+                    {renderViolations(sub.violations ?? [], data?.startedAt)}
                   </div>
                 );
               })}
@@ -242,13 +279,14 @@ export default function QuizResults() {
                     <th className="px-4 py-3 font-bold rounded-tl-lg">{t("results.participant")}</th>
                     <th className="px-4 py-3 font-bold">{t("results.score")}</th>
                     <th className="px-4 py-3 font-bold">{t("results.completed")}</th>
+                    <th className="px-4 py-3 font-bold">{t("results.violations")}</th>
                     <th className="px-4 py-3 font-bold text-right rounded-tr-lg">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sessions.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-muted">{t("results.noResults")}</td>
+                      <td colSpan={5} className="p-4 text-center text-muted">{t("results.noResults")}</td>
                     </tr>
                   ) : (
                     sessions.map((session: any, index: number) => (
@@ -261,6 +299,15 @@ export default function QuizResults() {
                         </td>
                         <td className="px-4 py-3 text-muted">
                           {session.completedQuestions || 0}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(session.violationCount || 0) > 0 ? (
+                            <span className="rounded-full bg-red-500/10 px-2 py-1 text-xs font-bold text-red-500 whitespace-nowrap">
+                              🔴 {session.violationCount}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
