@@ -77,6 +77,13 @@ public class QuizzesController(
         return Ok(result);
     }
 
+    [HttpGet("join/{token}")]
+    public async Task<IActionResult> GetQuizByParticipationToken(string token)
+    {
+        var result = await quizService.GetByParticipationTokenAsync(token);
+        return Ok(result);
+    }
+
     // --- Questions (owner/admin) ---
 
     [HttpGet("{id:guid}/questions")]
@@ -127,8 +134,8 @@ public class QuizzesController(
     public async Task<IActionResult> Submit(Guid id, [FromBody] SubmitRequest request)
     {
         var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
-        await sessionService.SubmitAsync(id, sessionToken, request);
-        return Accepted();
+        var result = await sessionService.SubmitAsync(id, sessionToken, request);
+        return Ok(result);
     }
 
     [HttpPost("{id:guid}/event")]
@@ -137,6 +144,41 @@ public class QuizzesController(
     {
         var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
         await sessionService.LogEventAsync(id, sessionToken, request);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/finish")]
+    [RequireSessionToken]
+    public async Task<IActionResult> FinishExam(Guid id)
+    {
+        var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
+        var result = await sessionService.FinishSessionAsync(id, sessionToken);
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/sessions/self-lock")]
+    [RequireSessionToken]
+    public async Task<IActionResult> SelfLock(Guid id)
+    {
+        var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
+        await sessionService.SelfLockAsync(id, sessionToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/code-snapshot")]
+    [RequireSessionToken]
+    public async Task<IActionResult> CodeSnapshot(Guid id, [FromBody] CodExam.Application.DTOs.Session.CodeSnapshotRequest request)
+    {
+        var sessionToken = (string)HttpContext.Items[RequireSessionTokenAttribute.ItemKey]!;
+        await sessionService.CodeSnapshotAsync(id, sessionToken, request);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}/sessions/{sessionId:guid}")]
+    [Authorize(Policy = "RequireUser")]
+    public async Task<IActionResult> TerminateSession(Guid id, Guid sessionId)
+    {
+        await sessionService.TerminateSessionAsync(id, sessionId, UserId);
         return NoContent();
     }
 }

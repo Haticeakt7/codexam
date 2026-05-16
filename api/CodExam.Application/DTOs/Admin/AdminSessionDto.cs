@@ -13,4 +13,19 @@ public class AdminSessionDto
     public DateTime?   FinishedAt  { get; set; }
     public bool        IsActive    { get; set; }
     public bool        IsLocked    { get; set; }
+    public int         TotalScore          { get; set; }
+    public int         AntiCheatEventCount { get; set; }
+    public List<AdminSessionEventDto> AntiCheatEvents { get; set; } = [];
+    public List<AdminSessionEventDto> Warnings        { get; set; } = [];
+    public string?     LatestCode          { get; set; }
+    public string?     LatestLanguage      { get; set; }
+    public int?        CurrentQuestionIndex { get; set; }
+}
+
+public class AdminSessionEventDto
+{
+    public string   EventType { get; set; } = "";
+    public string   Severity  { get; set; } = "";
+    public DateTime Timestamp { get; set; }
+    public string?  Message   { get; set; }
 }

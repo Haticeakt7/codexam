@@ -1,5 +1,5 @@
 import client from "./client";
-import type { AdminStats, AdminUser, AdminSession, Quiz } from "./types";
+import type { AdminStats, AdminUser, AdminSession, AdminUserSession, SystemLog, Quiz } from "./types";
 
 export interface UpdateUserRequest {
   role?: "Admin" | "User";
@@ -25,9 +25,21 @@ export const adminApi = {
   deleteQuiz: (id: string) =>
     client.delete(`/admin/quizzes/${id}`),
 
+  bulkDeleteQuizzes: (ids: string[]) =>
+    client.delete("/admin/quizzes", { data: ids }),
+
   getSessions: () =>
     client.get<AdminSession[]>("/admin/sessions").then((r) => r.data),
 
   forceEndSession: (id: string) =>
     client.delete(`/admin/sessions/${id}`),
+
+  getUserSessions: () =>
+    client.get<AdminUserSession[]>("/admin/user-sessions").then((r) => r.data),
+
+  revokeUserSession: (userId: string) =>
+    client.post(`/admin/user-sessions/${userId}/revoke`),
+
+  getSystemLogs: (params?: { source?: string; limit?: number }) =>
+    client.get<SystemLog[]>("/admin/logs", { params }).then((r) => r.data),
 };

@@ -11,4 +11,5 @@ public interface IQuizService
     Task                DeleteQuizAsync(Guid quizId, Guid requesterId);
     Task<QuizDto>       PublishQuizAsync(Guid quizId, Guid requesterId);
     Task<List<QuizDto>> GetAllQuizzesAsync();
+    Task<QuizDto>       GetByParticipationTokenAsync(string token);
 }

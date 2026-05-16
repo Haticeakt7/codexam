@@ -69,18 +69,20 @@ Arayüz Türkçe ve İngilizce olarak sunulur; kullanıcı her sayfada dil deği
 
 | Gereksinim | CodExam Karşılığı | Durum |
 |------------|-------------------|-------|
-| Anlamlı problem çözümü | Kod çalıştırma, quiz motoru, anti-cheat, replay | Planlandı |
-| Belirli hedef kullanıcı | Admin, User (quiz sahibi), Anonim katılımcı | Karşılanıyor |
-| Responsive arayüz | TailwindCSS, mobil uyumlu layout | Planlandı |
-| Veritabanı | PostgreSQL + JSONB + Redis | Karşılanıyor |
-| En az 2 kullanıcı rolü | Admin ve User (+ anonim) | Karşılanıyor |
-| CRUD işlemleri | Quiz, soru, kullanıcı, session, submission yönetimi | Planlandı |
-| Arama / filtreleme | Quiz listesi filtreleme, durum sıralama | Planlandı |
-| En az 2 özgün özellik | Session token katılım + diff-based replay | Karşılanıyor |
-| Çalışan proje bağlantısı | Docker Compose + Nginx ile deploy | Planlandı |
-| Kısa rapor | İstenen başlıklara göre hazırlanacak | Planlandı |
-| Bireysel katkı beyanı | GitHub commit ve PR geçmişi ile desteklenecek | Planlandı |
-| Sunum ve canlı demo | 3 rol akışıyla (Admin, User, Anonim) hazırlanacak | Planlandı |
+| Anlamlı problem çözümü | Kod çalıştırma, quiz motoru, anti-cheat, replay | ✅ Tamamlandı |
+| Belirli hedef kullanıcı | Admin, User (quiz sahibi), Anonim katılımcı | ✅ Tamamlandı |
+| Responsive arayüz | TailwindCSS, mobil uyumlu layout | ✅ Tamamlandı |
+| Veritabanı | PostgreSQL + JSONB + Redis | ✅ Tamamlandı |
+| En az 2 kullanıcı rolü | Admin ve User (+ anonim) | ✅ Tamamlandı |
+| CRUD işlemleri | Quiz, soru, kullanıcı, session, submission yönetimi | ✅ Tamamlandı |
+| Arama / filtreleme | Quiz listesi filtreleme, durum sıralama | ✅ Tamamlandı |
+| En az 2 özgün özellik | Session token katılım + diff-based replay + benzersiz katılım linki + kişiselleştirilmiş editör | ✅ Tamamlandı |
+| Çalışan proje bağlantısı | Docker Compose + Nginx ile deploy | ✅ Tamamlandı |
+| Kısa rapor | İstenen başlıklara göre hazırlanacak | ⬜ Hazırlanacak |
+| Bireysel katkı beyanı | GitHub commit ve PR geçmişi ile desteklenecek | ✅ GitHub PR geçmişi mevcut |
+| Sunum ve canlı demo | 3 rol akışıyla (Admin, User, Anonim) + Demo modu | ✅ Demo modu hazır (npm run dev:demo) |
+
+> **Son Güncelleme: 2026-05-16 (v3)** — BugFix dil kısıtlama + buggyCode editor fix; QuizResults cevap modalı; resizable Test Cases paneli (Coding/BugFix sorularında Output altında, stdinOnLeft/Right ile uyumlu); tüm sayfa/layout mobil responsive optimizasyonu.
 
 ---
 

@@ -24,6 +24,7 @@
 // ==========================================================
 
 import { Routes, Route } from "react-router-dom";
+import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminStats from "./AdminStats";
 import AdminUsers from "./AdminUsers";
 import AdminQuizzes from "./AdminQuizzes";
@@ -32,15 +33,14 @@ import AdminSystem from "./AdminSystem";
 
 export default function AdminDashboard() {
   return (
-    // TODO: AdminLayout bileşenini implement edince buraya sarın
-    // <AdminLayout>
-    <Routes>
-      <Route index element={<AdminStats />} />
-      <Route path="users" element={<AdminUsers />} />
-      <Route path="quizzes" element={<AdminQuizzes />} />
-      <Route path="sessions" element={<AdminSessions />} />
-      <Route path="system" element={<AdminSystem />} />
-    </Routes>
-    // </AdminLayout>
+    <AdminLayout>
+      <Routes>
+        <Route index element={<AdminStats />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="quizzes" element={<AdminQuizzes />} />
+        <Route path="sessions" element={<AdminSessions />} />
+        <Route path="system" element={<AdminSystem />} />
+      </Routes>
+    </AdminLayout>
   );
 }

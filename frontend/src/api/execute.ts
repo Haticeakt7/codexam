@@ -1,5 +1,5 @@
 import client from "./client";
-import type { ExecutionResult } from "./types";
+import type { ExecutionResult, SupportedLanguage } from "./types";
 
 export interface ExecuteRequest {
   language: string;
@@ -13,4 +13,7 @@ export const executeApi = {
 
   getJobStatus: (jobId: string) =>
     client.get<ExecutionResult>(`/execute/${jobId}`).then((r) => r.data),
+
+  getLanguages: () =>
+    client.get<SupportedLanguage[]>("/execute/languages").then((r) => r.data),
 };

@@ -116,29 +116,35 @@ frontend/
 │   │
 │   ├── stores/
 │   │   ├── authStore.ts            # user, accessToken, isAuthenticated, logout
-│   │   ├── editorStore.ts          # language, code, output, isRunning, STARTERS
-│   │   ├── examStore.ts            # sessionToken, answers, antiCheatEvents, isLocked
-│   │   ├── themeStore.ts           # uiTheme, monacoTheme, persist
+│   │   ├── editorStore.ts          # language (string), code, stdin, output, isRunning, FALLBACK_STARTERS
+│   │   ├── examStore.ts            # sessionToken, sessionId, questions[], answers, antiCheatEvents, isLocked, endsAt
+│   │   ├── themeStore.ts           # uiTheme (light|dark), persist — monacoTheme KALDIRILDI
 │   │   ├── i18nStore.ts            # locale (tr|en), persist
-│   │   └── toastStore.ts           # toast queue, add/dismiss
+│   │   ├── toastStore.ts           # toast queue, push(type, msg), toast.{success,error,warning,info}
+│   │   └── preferencesStore.ts     # ✅ YENİ: editorTheme, fontSize (8-32), layout ({leftWidth, rightTopHeight})
+│   │                               #   Zustand persist + debounced server sync (1200ms/2000ms)
+│   │                               #   EDITOR_THEMES const export, loadFromServer(), saveToServer()
 │   │
 │   ├── hooks/
 │   │   ├── useAuth.ts              # useLogin, useRegister, useMe, useLogout
-│   │   ├── useQuizzes.ts           # useMyQuizzes, useQuizInfo, CRUD, useQuestions, useActiveSessions
+│   │   ├── useQuizzes.ts           # useMyQuizzes, useQuiz, useQuizInfo, CRUD, useQuestions, useActiveSessions
+│   │   │                           # + useQuizByToken (YENİ), usePublishQuiz (invalidates quiz+quizzes+quiz-info)
 │   │   ├── useSessions.ts          # useJoinQuiz, useSubmit, useLogEvent, useReplay
-│   │   ├── useExecute.ts           # useRunCode (polling 1s interval)
+│   │   ├── useExecute.ts           # useRunCode (polling 1s) + useLanguages (YENİ, Infinity staleTime, fallback)
+│   │   ├── usePreferences.ts       # ✅ YENİ: usePreferencesSync() — login sonrası server yüklemesi
 │   │   └── useAdmin.ts             # useAdminStats, useAdminUsers, useAdminQuizzes, useAdminSessions, useAdminSystemLogs
 │   │
 │   ├── api/
 │   │   ├── client.ts               # Axios instance, JWT interceptor, DEMO adapter
-│   │   ├── types.ts                # Tüm TypeScript interface'leri
+│   │   ├── types.ts                # ✅ Güncel: SupportedLanguage, UserPreferences, Quiz (+token/dates), QuizStatus (5 değer)
 │   │   ├── auth.ts                 # POST login/register/refresh, GET me
-│   │   ├── quizzes.ts              # Quiz CRUD + publish + info
+│   │   ├── quizzes.ts              # Quiz CRUD + publish + info + getByToken (YENİ)
 │   │   ├── questions.ts            # Soru ve test case yönetimi
 │   │   ├── sessions.ts             # Join, submit, logEvent, sessions
 │   │   ├── submissions.ts          # Results, replay, appendReplayDiff
-│   │   ├── execute.ts              # POST /execute + GET /execute/:jobId
+│   │   ├── execute.ts              # POST /execute + GET /execute/:jobId + getLanguages (YENİ)
 │   │   ├── admin.ts                # Stats, users, quizzes, sessions
+│   │   ├── preferences.ts          # ✅ YENİ: GET/PUT /api/users/me/preferences
 │   │   └── mock/
 │   │       ├── seed.ts             # Demo seed verisi
 │   │       └── adapter.ts          # Axios custom adapter (tüm endpoint'ler)
@@ -168,29 +174,28 @@ frontend/
 
 | Path | Bileşen | Erişim | Durum |
 |------|---------|--------|-------|
-| `/` | `Home/index.tsx` | Public | ⬜ İskelet |
-| `/login` | `Auth/Login.tsx` | Guest only | ⬜ İskelet |
-| `/register` | `Auth/Register.tsx` | Guest only | ⬜ İskelet |
-| `/q/:id` | `Quiz/QuizLanding.tsx` | Public | ⬜ İskelet |
-| `/q/:id/take` | `Quiz/QuizTake.tsx` | Session token | ⬜ İskelet |
-| `/dashboard` | `Dashboard/index.tsx` | User / Admin | ⬜ İskelet |
-| `/dashboard/new` | `Dashboard/NewQuiz.tsx` | User / Admin | ⬜ İskelet |
-| `/dashboard/quiz/:id/settings` | `Dashboard/QuizSettings.tsx` | Owner / Admin | ⬜ İskelet |
-| `/dashboard/quiz/:id/questions` | `Dashboard/QuizQuestions.tsx` | Owner / Admin | ⬜ İskelet |
-| `/dashboard/quiz/:id/monitor` | `Dashboard/QuizMonitor.tsx` | Owner / Admin | ⬜ İskelet |
-| `/dashboard/quiz/:id/results` | `Dashboard/QuizResults.tsx` | Owner / Admin | ⬜ İskelet |
-| `/dashboard/quiz/:id/replay/:sessionId` | `Dashboard/SubmissionReplay.tsx` | Owner / Admin | ⬜ İskelet |
-| `/profile` | `Profile/index.tsx` | User / Admin | ⬜ İskelet |
-| `/admin` | `Admin/index.tsx` → Route container | Admin | ✅ Route JSX |
-| `/admin` (index) | `Admin/AdminStats.tsx` | Admin | ⬜ İskelet |
-| `/admin/users` | `Admin/AdminUsers.tsx` | Admin | ⬜ İskelet |
-| `/admin/quizzes` | `Admin/AdminQuizzes.tsx` | Admin | ⬜ İskelet |
-| `/admin/sessions` | `Admin/AdminSessions.tsx` | Admin | ⬜ İskelet |
-| `/admin/system` | `Admin/AdminSystem.tsx` | Admin | ⬜ İskelet |
-| `*` | `Error/NotFound.tsx` | Public | ⬜ İskelet |
-| `/403` | `Error/Forbidden.tsx` | Public | ⬜ İskelet |
-
-> **⬜ İskelet:** Sayfa dosyası mevcut, bağlantı noktaları (hook, store, SignalR) ve UI tasarımı (ASCII layout) yorum satırları ile belgelenmiş, `return null` placeholder ile bitiyor. UI implementasyonu Emir (designer) tarafından yapılacak.
+| `/` | `Home/index.tsx` | Public | ✅ Tamamlandı — dinamik diller, font/tema, her zaman görünür stdin |
+| `/login` | `Auth/Login.tsx` | Guest only | ✅ Tamamlandı |
+| `/register` | `Auth/Register.tsx` | Guest only | ✅ Tamamlandı |
+| `/q/join/:token` | `Quiz/QuizLandingByToken.tsx` | Public | ✅ YENİ — `/q/:id`'den ÖNCE tanımlı (önemli!) |
+| `/q/:id` | `Quiz/QuizLanding.tsx` | Public | ✅ Tamamlandı — 5 durum, tarih/saat gösterimi |
+| `/q/:id/take` | `Quiz/QuizTake.tsx` | Session token | ✅ Tamamlandı — resizable panels, stdin, font/tema |
+| `/dashboard` | `Dashboard/index.tsx` | User / Admin | ✅ Tamamlandı |
+| `/dashboard/new` | `Dashboard/NewQuiz.tsx` | User / Admin | ✅ Tamamlandı (sadeleştirildi) |
+| `/dashboard/quiz/:id/settings` | `Dashboard/QuizSettings.tsx` | Owner / Admin | ✅ Tamamlandı — katılım linki, tarih, kilitleme, yayınlama |
+| `/dashboard/quiz/:id/questions` | `Dashboard/QuizQuestions.tsx` | Owner / Admin | ✅ Tamamlandı (5 soru tipi) |
+| `/dashboard/quiz/:id/monitor` | `Dashboard/QuizMonitor.tsx` | Owner / Admin | ✅ Tamamlandı (SignalR) |
+| `/dashboard/quiz/:id/results` | `Dashboard/QuizResults.tsx` | Owner / Admin | ✅ Tamamlandı |
+| `/dashboard/quiz/:id/replay/:sessionId` | `Dashboard/SubmissionReplay.tsx` | Owner / Admin | ✅ Tamamlandı |
+| `/profile` | `Profile/index.tsx` | User / Admin | ✅ Tamamlandı |
+| `/admin/*` | `Admin/index.tsx` → Route container | Admin | ✅ Tamamlandı |
+| `/admin` (index) | `Admin/AdminStats.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/users` | `Admin/AdminUsers.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/quizzes` | `Admin/AdminQuizzes.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/sessions` | `Admin/AdminSessions.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/logs` | `Admin/AdminSystem.tsx` | Admin | ✅ Tamamlandı |
+| `*` | `Error/NotFound.tsx` | Public | ✅ Tamamlandı |
+| `/403` | `Error/Forbidden.tsx` | Public | ✅ Tamamlandı |
 
 ### PrivateRoute Kullanımı
 

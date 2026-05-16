@@ -11,4 +11,8 @@ public interface IAdminService
     Task                    DeleteUserAsync(Guid userId);
     Task<List<QuizDto>>     GetAllQuizzesAsync();
     Task                    DeleteQuizAsync(Guid quizId);
+    Task                    BulkDeleteQuizzesAsync(List<Guid> quizIds);
+    Task<List<AdminUserSessionDto>> GetUserSessionsAsync();
+    Task                    RevokeUserSessionAsync(Guid userId);
+    Task<List<SystemLogDto>>        GetSystemLogsAsync(string? source, int limit);
 }

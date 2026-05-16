@@ -18,4 +18,13 @@ public class SessionsController(ISubmissionService submissionService) : Controll
         var result = await submissionService.GetReplayAsync(sessionId, UserId);
         return Ok(result);
     }
+
+    [HttpGet("{sessionId:guid}/submissions")]
+    [Authorize(Policy = "RequireUser")]
+    public async Task<IActionResult> GetSessionSubmissions(Guid sessionId)
+    {
+        var result = await submissionService.GetSessionSubmissionsAsync(sessionId, UserId);
+        return Ok(result);
+    }
+
 }

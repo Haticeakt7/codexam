@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Question } from "@/api/types";
 
 export interface AntiCheatEvent {
   eventType: "TabSwitch" | "FullscreenExit" | "ClipboardAttempt" | "Keydown";
@@ -18,6 +19,7 @@ interface ExamState {
   sessionId: string | null;
   quizId: string | null;
   endsAt: string | null;
+  questions: Question[];
   activeQuestionIndex: number;
   answers: Record<string, AnswerDraft>;
   antiCheatEvents: AntiCheatEvent[];
@@ -28,6 +30,7 @@ interface ExamState {
     sessionId: string;
     quizId: string;
     endsAt: string;
+    questions: Question[];
   }) => void;
   setActiveQuestion: (index: number) => void;
   updateAnswer: (questionId: string, draft: AnswerDraft) => void;
@@ -41,6 +44,7 @@ export const useExamStore = create<ExamState>((set) => ({
   sessionId: null,
   quizId: null,
   endsAt: null,
+  questions: [],
   activeQuestionIndex: 0,
   answers: {},
   antiCheatEvents: [],
@@ -52,6 +56,7 @@ export const useExamStore = create<ExamState>((set) => ({
       sessionId: data.sessionId,
       quizId: data.quizId,
       endsAt: data.endsAt,
+      questions: data.questions,
     }),
 
   setActiveQuestion: (index) => set({ activeQuestionIndex: index }),
@@ -72,6 +77,7 @@ export const useExamStore = create<ExamState>((set) => ({
       sessionId: null,
       quizId: null,
       endsAt: null,
+      questions: [],
       activeQuestionIndex: 0,
       answers: {},
       antiCheatEvents: [],
