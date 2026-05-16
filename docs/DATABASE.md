@@ -53,6 +53,7 @@ CREATE TABLE users (
                                  CHECK (status IN ('active', 'inactive')),
     refresh_token           varchar(512),
     refresh_token_expires_at timestamptz,
+    preferences_json text,                                   -- JSON: editor tercihleri (tema, fontSize, layout) [YENİ]
     created_at      timestamptz  NOT NULL DEFAULT now(),
     updated_at      timestamptz  NOT NULL DEFAULT now(),
     deleted_at      timestamptz                              -- soft delete
@@ -63,23 +64,36 @@ CREATE TABLE users (
 
 ```sql
 CREATE TABLE quizzes (
-    id                  uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
-    owner_id            uuid         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title               varchar(200) NOT NULL,
-    description         text,
-    duration_minutes    int          NOT NULL CHECK (duration_minutes > 0),
-    mode                varchar(20)  NOT NULL DEFAULT 'RealTime'
-                                     CHECK (mode IN ('RealTime', 'FreeStyle')),
-    anti_cheat_options  jsonb        NOT NULL DEFAULT '{}',
-    form_schema         jsonb        NOT NULL DEFAULT '[]',
-    access_code         varchar(50),
-    status              varchar(10)  NOT NULL DEFAULT 'Draft'
-                                     CHECK (status IN ('Draft', 'Active', 'Ended')),
-    created_at          timestamptz  NOT NULL DEFAULT now(),
-    updated_at          timestamptz  NOT NULL DEFAULT now(),
-    published_at        timestamptz
+    id                   uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id             uuid         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title                varchar(200) NOT NULL,
+    description          text,
+    duration_minutes     int          NOT NULL CHECK (duration_minutes > 0),
+    mode                 varchar(20)  NOT NULL DEFAULT 'RealTime'
+                                      CHECK (mode IN ('RealTime', 'FreeStyle')),
+    anti_cheat_options   jsonb        NOT NULL DEFAULT '{}',
+    form_schema          jsonb        NOT NULL DEFAULT '[]',
+    access_code          varchar(50),
+    status               varchar(20)  NOT NULL DEFAULT 'Draft'
+                                      CHECK (status IN ('Draft', 'Active', 'Ended', 'Published', 'Archived')),
+    participation_token  uuid         NOT NULL UNIQUE DEFAULT gen_random_uuid(), -- [YENİ] katılım linki tokeni
+    starts_at            timestamptz,                         -- [YENİ] NULL = hemen aktif
+    ends_at              timestamptz,                         -- [YENİ] FreeStyle için zorunlu
+    created_at           timestamptz  NOT NULL DEFAULT now(),
+    updated_at           timestamptz  NOT NULL DEFAULT now(),
+    published_at         timestamptz
 );
+
+-- YENİ index
+CREATE UNIQUE INDEX ix_quizzes_participation_token ON quizzes(participation_token);
 ```
+
+> **Quiz Status Değerleri (Güncellendi):**
+> - `Draft` — taslak, düzenlenebilir
+> - `Published` — zamanlanmış (StartsAt ileriki bir tarih), katılım açık değil
+> - `Active` — katılım açık
+> - `Ended` — sona erdi
+> - `Archived` — arşivlendi (manuel)
 
 ### 2.3 `questions`
 

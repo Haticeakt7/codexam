@@ -17,6 +17,7 @@ interface AuthState {
 
   setAuth: (user: AuthUser, token: string) => void;
   setToken: (token: string) => void;
+  setDisplayName: (displayName: string) => void;
   logout: () => void;
 }
 
@@ -33,8 +34,13 @@ export const useAuthStore = create<AuthState>()(
       setToken: (accessToken) =>
         set({ accessToken }),
 
-      logout: () =>
-        set({ user: null, accessToken: null, isAuthenticated: false }),
+      setDisplayName: (displayName) =>
+        set((state) => state.user ? { user: { ...state.user, displayName } } : {}),
+
+      logout: () => {
+        localStorage.removeItem("codexam_refresh");
+        set({ user: null, accessToken: null, isAuthenticated: false });
+      },
     }),
     { name: "codexam_auth" }
   )

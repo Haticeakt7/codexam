@@ -1,6 +1,6 @@
 # CodExam – Frontend Dokümanı
 
-> React 18 + TypeScript 5 + Vite 5 · TailwindCSS 3 · Monaco Editor · Zustand · TanStack Query v5
+> React 19 + TypeScript 6 + Vite 8 · TailwindCSS 3 · Monaco Editor · Zustand 5 · TanStack Query v5
 
 ---
 
@@ -17,6 +17,7 @@
 9. [Monaco Editör Entegrasyonu](#9-monaco-editör-entegrasyonu)
 10. [Sayfa Detayları](#10-sayfa-detayları)
 11. [Bileşen Kütüphanesi](#11-bileşen-kütüphanesi)
+12. [Demo Modu](#12-demo-modu)
 
 ---
 
@@ -24,14 +25,14 @@
 
 | Paket | Versiyon | Kullanım |
 |-------|----------|---------|
-| `react` | 18.x | UI framework |
-| `typescript` | 5.x | Tip güvenliği, strict mode |
-| `vite` | 5.x | Build tool, HMR, dev server |
+| `react` | 19.x | UI framework |
+| `typescript` | 6.x | Tip güvenliği, strict mode |
+| `vite` | 8.x | Build tool, HMR, dev server |
 | `tailwindcss` | 3.x | Utility-first styling + CSS variable tema |
 | `@monaco-editor/react` | latest | Kod editörü (Ana sayfa + Sınav) |
-| `zustand` | latest | Global state (auth, editor, tema, i18n) |
+| `zustand` | 5.x | Global state (auth, editor, tema, i18n, toast) |
 | `@tanstack/react-query` | v5 | Server state, caching, loading/error state |
-| `react-router-dom` | v6 | Routing, korumalı rotalar, lazy loading |
+| `react-router-dom` | v7 | Routing, korumalı rotalar, lazy loading |
 | `axios` | latest | HTTP client, interceptor |
 | `@microsoft/signalr` | latest | WebSocket / SignalR realtime |
 | `i18next` | latest | i18n çekirdek |
@@ -56,127 +57,112 @@ frontend/
 ├── public/
 │   └── favicon.ico
 ├── src/
-│   ├── main.tsx                    # Uygulama entry point
-│   ├── App.tsx                     # Router, QueryClientProvider, i18n, tema
+│   ├── main.tsx                    # Uygulama entry point, i18n init
+│   ├── App.tsx                     # BrowserRouter, lazy routes, DemoBanner, Toaster
 │   │
 │   ├── routes/
-│   │   ├── index.tsx               # Tüm route tanımları
-│   │   ├── PrivateRoute.tsx        # JWT korumalı rota wrapper
+│   │   ├── PrivateRoute.tsx        # JWT korumalı rota wrapper (roles prop)
 │   │   └── GuestRoute.tsx          # Giriş yapmış kullanıcıyı yönlendir
 │   │
-│   ├── pages/
-│   │   ├── Home/
-│   │   │   └── index.tsx           # Ana sayfa: kod editörü
+│   ├── pages/                      # ⚠️ Tüm sayfalar iskelet — return null, tasarım yorum satırları
+│   │   ├── Home/index.tsx          # Ana sayfa: Monaco editör + kod çalıştırma
 │   │   ├── Auth/
-│   │   │   ├── Login.tsx
-│   │   │   └── Register.tsx
+│   │   │   ├── Login.tsx           # Giriş formu
+│   │   │   └── Register.tsx        # Kayıt formu
 │   │   ├── Quiz/
-│   │   │   ├── QuizLanding.tsx     # /q/:id – katılım formu
-│   │   │   └── QuizTake.tsx        # /q/:id/take – sınav ekranı
+│   │   │   ├── QuizLanding.tsx     # /q/:id – katılım formu (useQuizInfo, useJoinQuiz)
+│   │   │   └── QuizTake.tsx        # /q/:id/take – fullscreen sınav ekranı
 │   │   ├── Dashboard/
-│   │   │   ├── index.tsx           # Dashboard ana
-│   │   │   ├── QuizList.tsx        # Quiz listesi
-│   │   │   ├── QuizCreate.tsx      # Yeni quiz oluştur
-│   │   │   ├── QuizEdit.tsx        # Quiz düzenle
-│   │   │   ├── QuizQuestions.tsx   # Soru yönetimi
-│   │   │   ├── QuizMonitor.tsx     # Canlı izleme
-│   │   │   ├── QuizResults.tsx     # Sonuçlar tablosu
-│   │   │   ├── SessionDetail.tsx   # Tek katılımcı detayı
-│   │   │   ├── Replay.tsx          # Submission replay ekranı
-│   │   │   └── Profile.tsx
+│   │   │   ├── index.tsx           # Quiz listesi + aksiyonlar (useMyQuizzes)
+│   │   │   ├── NewQuiz.tsx         # Quiz oluşturma formu (useCreateQuiz)
+│   │   │   ├── QuizSettings.tsx    # Quiz ayarları (useUpdateQuiz, usePublishQuiz)
+│   │   │   ├── QuizQuestions.tsx   # Soru yönetimi (useQuestions, useCreateQuestion)
+│   │   │   ├── QuizMonitor.tsx     # Canlı izleme (SignalR, useActiveSessions)
+│   │   │   ├── QuizResults.tsx     # Sonuçlar + grafik (useQuizResults)
+│   │   │   └── SubmissionReplay.tsx # Replay oynatıcı (useReplay)
+│   │   ├── Profile/index.tsx       # Profil + şifre değiştirme (useAuthStore)
 │   │   ├── Admin/
-│   │   │   ├── index.tsx           # Admin dashboard
-│   │   │   ├── Users.tsx
-│   │   │   ├── Quizzes.tsx
-│   │   │   ├── Sessions.tsx
-│   │   │   └── SystemLogs.tsx
+│   │   │   ├── index.tsx           # Route container (Routes/Route gerçek implementasyon)
+│   │   │   ├── AdminStats.tsx      # KPI dashboard (useAdminStats)
+│   │   │   ├── AdminUsers.tsx      # Kullanıcı yönetimi (useAdminUsers)
+│   │   │   ├── AdminQuizzes.tsx    # Tüm quizler (useAdminQuizzes)
+│   │   │   ├── AdminSessions.tsx   # Tüm sessionlar (useAdminSessions)
+│   │   │   └── AdminSystem.tsx     # Sistem logları (useAdminSystemLogs)
 │   │   └── Error/
 │   │       ├── NotFound.tsx        # 404
-│   │       ├── Forbidden.tsx       # 403
-│   │       └── ServerError.tsx     # 500
+│   │       └── Forbidden.tsx       # 403
 │   │
 │   ├── components/
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Sidebar.tsx         # Dashboard/Admin sol menü
-│   │   │   └── PageWrapper.tsx
-│   │   ├── editor/
-│   │   │   ├── CodeEditor.tsx      # Monaco wrapper
-│   │   │   ├── OutputPanel.tsx     # Stdout/stderr/stats
-│   │   │   └── LanguageSelect.tsx
-│   │   ├── quiz/
-│   │   │   ├── QuestionForm/
-│   │   │   │   ├── CodingForm.tsx
-│   │   │   │   ├── MultipleChoiceForm.tsx
-│   │   │   │   ├── OutputPredictionForm.tsx
-│   │   │   │   ├── BugFixForm.tsx
-│   │   │   │   └── ShortAnswerForm.tsx
-│   │   │   ├── TestCaseList.tsx
-│   │   │   ├── FormSchemaEditor.tsx  # Katılımcı form şema editörü
-│   │   │   ├── AntiCheatOptions.tsx
-│   │   │   └── QuizStatusBadge.tsx
-│   │   ├── monitor/
-│   │   │   ├── ParticipantCard.tsx
-│   │   │   ├── ParticipantGrid.tsx
-│   │   │   └── LiveCodePanel.tsx
-│   │   ├── replay/
-│   │   │   ├── ReplayPlayer.tsx
-│   │   │   └── TimelineSlider.tsx
-│   │   └── ui/
-│   │       ├── Button.tsx
-│   │       ├── Input.tsx
-│   │       ├── Select.tsx
-│   │       ├── Modal.tsx
-│   │       ├── Toast.tsx
-│   │       ├── Spinner.tsx
-│   │       ├── Badge.tsx
-│   │       ├── Table.tsx
-│   │       ├── EmptyState.tsx
-│   │       └── ErrorBoundary.tsx
+│   │   ├── layouts/                # ✅ Gerçek implementasyon + tasarım yorum satırları
+│   │   │   ├── AppLayout.tsx       # Header (logo, dil, tema, auth nav) + children
+│   │   │   ├── DashboardLayout.tsx # Sol sidebar (nav) + sağ içerik
+│   │   │   ├── AdminLayout.tsx     # Sol sidebar (admin nav) + sağ içerik
+│   │   │   └── ExamLayout.tsx      # h-screen: header + sidebar + editor + footer
+│   │   └── ui/                     # ✅ Gerçek implementasyon + tasarım yorum satırları
+│   │       ├── Button.tsx          # variant: primary|secondary|danger|ghost, loading
+│   │       ├── Input.tsx           # label, error, helper, forwardRef
+│   │       ├── Select.tsx          # options[], placeholder, forwardRef
+│   │       ├── Textarea.tsx        # label, error, helper, resize-y, forwardRef
+│   │       ├── Badge.tsx           # variant: default|success|danger|warning|info|muted
+│   │       ├── Card.tsx + CardHeader.tsx
+│   │       ├── Modal.tsx           # createPortal, Escape, backdrop, footer
+│   │       ├── ConfirmDialog.tsx   # Modal üzerine onay/iptal ikili buton
+│   │       ├── Table.tsx           # Generic<T>, columns, loading, emptyText
+│   │       ├── EmptyState.tsx      # icon, title, description, action buton
+│   │       ├── PageHeader.tsx      # title, subtitle, breadcrumbs, action
+│   │       ├── Spinner.tsx         # size: sm|md|lg, animate-spin
+│   │       ├── Toaster.tsx         # useToastStore → fixed bottom-4 right-4
+│   │       └── DemoBanner.tsx      # VITE_DEMO_MODE=true iken amber bant
 │   │
 │   ├── stores/
-│   │   ├── authStore.ts
-│   │   ├── editorStore.ts
-│   │   ├── examStore.ts
-│   │   ├── themeStore.ts
-│   │   └── i18nStore.ts
+│   │   ├── authStore.ts            # user, accessToken, isAuthenticated, logout
+│   │   ├── editorStore.ts          # language (string), code, stdin, output, isRunning, FALLBACK_STARTERS
+│   │   ├── examStore.ts            # sessionToken, sessionId, questions[], answers, antiCheatEvents, isLocked, endsAt
+│   │   ├── themeStore.ts           # uiTheme (light|dark), persist — monacoTheme KALDIRILDI
+│   │   ├── i18nStore.ts            # locale (tr|en), persist
+│   │   ├── toastStore.ts           # toast queue, push(type, msg), toast.{success,error,warning,info}
+│   │   └── preferencesStore.ts     # ✅ YENİ: editorTheme, fontSize (8-32), layout ({leftWidth, rightTopHeight})
+│   │                               #   Zustand persist + debounced server sync (1200ms/2000ms)
+│   │                               #   EDITOR_THEMES const export, loadFromServer(), saveToServer()
 │   │
 │   ├── hooks/
-│   │   ├── useAntiCheat.ts         # Tab/fullscreen/clipboard izleme
-│   │   ├── useExamTimer.ts         # Sunucu senkronlu geri sayım
-│   │   ├── useSignalR.ts           # SignalR bağlantı yönetimi
-│   │   └── useToast.ts
+│   │   ├── useAuth.ts              # useLogin, useRegister, useMe, useLogout
+│   │   ├── useQuizzes.ts           # useMyQuizzes, useQuiz, useQuizInfo, CRUD, useQuestions, useActiveSessions
+│   │   │                           # + useQuizByToken (YENİ), usePublishQuiz (invalidates quiz+quizzes+quiz-info)
+│   │   ├── useSessions.ts          # useJoinQuiz, useSubmit, useLogEvent, useReplay
+│   │   ├── useExecute.ts           # useRunCode (polling 1s) + useLanguages (YENİ, Infinity staleTime, fallback)
+│   │   ├── usePreferences.ts       # ✅ YENİ: usePreferencesSync() — login sonrası server yüklemesi
+│   │   └── useAdmin.ts             # useAdminStats, useAdminUsers, useAdminQuizzes, useAdminSessions, useAdminSystemLogs
 │   │
 │   ├── api/
-│   │   ├── client.ts               # Axios instance + interceptor
-│   │   ├── auth.ts                 # Auth endpoint'leri
-│   │   ├── execute.ts              # Kod çalıştırma
-│   │   ├── quiz.ts                 # Quiz CRUD
-│   │   ├── questions.ts            # Soru yönetimi
-│   │   ├── sessions.ts             # Session yönetimi
-│   │   ├── admin.ts                # Admin endpoint'leri
-│   │   └── types.ts                # API DTO tipleri
+│   │   ├── client.ts               # Axios instance, JWT interceptor, DEMO adapter
+│   │   ├── types.ts                # ✅ Güncel: SupportedLanguage, UserPreferences, Quiz (+token/dates), QuizStatus (5 değer)
+│   │   ├── auth.ts                 # POST login/register/refresh, GET me
+│   │   ├── quizzes.ts              # Quiz CRUD + publish + info + getByToken (YENİ)
+│   │   ├── questions.ts            # Soru ve test case yönetimi
+│   │   ├── sessions.ts             # Join, submit, logEvent, sessions
+│   │   ├── submissions.ts          # Results, replay, appendReplayDiff
+│   │   ├── execute.ts              # POST /execute + GET /execute/:jobId + getLanguages (YENİ)
+│   │   ├── admin.ts                # Stats, users, quizzes, sessions
+│   │   ├── preferences.ts          # ✅ YENİ: GET/PUT /api/users/me/preferences
+│   │   └── mock/
+│   │       ├── seed.ts             # Demo seed verisi
+│   │       └── adapter.ts          # Axios custom adapter (tüm endpoint'ler)
 │   │
 │   ├── locales/
-│   │   ├── tr.json
-│   │   └── en.json
+│   │   ├── tr.json                 # Türkçe i18n keyleri
+│   │   └── en.json                 # İngilizce i18n keyleri
 │   │
-│   ├── styles/
-│   │   ├── globals.css             # CSS variable tanımları, Tailwind directives
-│   │   └── monaco-themes.ts        # Monaco tema konfigürasyonu
-│   │
-│   └── utils/
-│       ├── diff.ts                 # Diff hesaplama (replay için)
-│       ├── format.ts               # Tarih, süre formatlama
-│       └── validation.ts           # Client-side yardımcı validasyon
+│   └── styles/
+│       └── globals.css             # CSS variable tema tokens, Tailwind directives
 │
 ├── index.html
 ├── vite.config.ts
 ├── tailwind.config.ts
 ├── tsconfig.json
 ├── tsconfig.app.json
-├── .eslintrc.cjs
-├── .prettierrc
+├── .env.demo                       # VITE_DEMO_MODE=true
+├── Dockerfile                      # Production: node:20 builder + nginx:alpine
 └── package.json
 ```
 
@@ -186,29 +172,30 @@ frontend/
 
 ### Route Tanımları
 
-| Path | Bileşen | Erişim | Açıklama |
-|------|---------|--------|---------|
-| `/` | `Home` | Public | Ana sayfa – anonim kod editörü |
-| `/login` | `Login` | Guest only | Giriş ekranı |
-| `/register` | `Register` | Guest only | Kayıt ekranı |
-| `/q/:id` | `QuizLanding` | Public | Quiz katılım sayfası |
-| `/q/:id/take` | `QuizTake` | Session token | Sınav ekranı |
-| `/dashboard` | `Dashboard` | User / Admin | Dashboard ana |
-| `/dashboard/quizzes` | `QuizList` | User / Admin | Quiz listesi |
-| `/dashboard/quizzes/new` | `QuizCreate` | User / Admin | Yeni quiz |
-| `/dashboard/quizzes/:id` | `QuizEdit` | Owner / Admin | Quiz düzenle |
-| `/dashboard/quizzes/:id/questions` | `QuizQuestions` | Owner / Admin | Soru yönetimi |
-| `/dashboard/quizzes/:id/monitor` | `QuizMonitor` | Owner / Admin | Canlı izleme |
-| `/dashboard/quizzes/:id/results` | `QuizResults` | Owner / Admin | Sonuçlar |
-| `/dashboard/quizzes/:id/results/:sessionId` | `SessionDetail` | Owner / Admin | Katılımcı detayı |
-| `/dashboard/quizzes/:id/results/:sessionId/replay` | `Replay` | Owner / Admin | Replay izle |
-| `/profile` | `Profile` | User / Admin | Profil |
-| `/admin` | `AdminDashboard` | Admin | Admin panel |
-| `/admin/users` | `AdminUsers` | Admin | Kullanıcı yönetimi |
-| `/admin/quizzes` | `AdminQuizzes` | Admin | Tüm quizler |
-| `/admin/sessions` | `AdminSessions` | Admin | Tüm sessionlar |
-| `/admin/system` | `AdminSystemLogs` | Admin | Sistem logları |
-| `*` | `NotFound` | Public | 404 |
+| Path | Bileşen | Erişim | Durum |
+|------|---------|--------|-------|
+| `/` | `Home/index.tsx` | Public | ✅ Tamamlandı — dinamik diller, font/tema, her zaman görünür stdin |
+| `/login` | `Auth/Login.tsx` | Guest only | ✅ Tamamlandı |
+| `/register` | `Auth/Register.tsx` | Guest only | ✅ Tamamlandı |
+| `/q/join/:token` | `Quiz/QuizLandingByToken.tsx` | Public | ✅ YENİ — `/q/:id`'den ÖNCE tanımlı (önemli!) |
+| `/q/:id` | `Quiz/QuizLanding.tsx` | Public | ✅ Tamamlandı — 5 durum, tarih/saat gösterimi |
+| `/q/:id/take` | `Quiz/QuizTake.tsx` | Session token | ✅ Tamamlandı — resizable panels, stdin, font/tema |
+| `/dashboard` | `Dashboard/index.tsx` | User / Admin | ✅ Tamamlandı |
+| `/dashboard/new` | `Dashboard/NewQuiz.tsx` | User / Admin | ✅ Tamamlandı (sadeleştirildi) |
+| `/dashboard/quiz/:id/settings` | `Dashboard/QuizSettings.tsx` | Owner / Admin | ✅ Tamamlandı — katılım linki, tarih, kilitleme, yayınlama |
+| `/dashboard/quiz/:id/questions` | `Dashboard/QuizQuestions.tsx` | Owner / Admin | ✅ Tamamlandı (5 soru tipi) |
+| `/dashboard/quiz/:id/monitor` | `Dashboard/QuizMonitor.tsx` | Owner / Admin | ✅ Tamamlandı (SignalR) |
+| `/dashboard/quiz/:id/results` | `Dashboard/QuizResults.tsx` | Owner / Admin | ✅ Tamamlandı |
+| `/dashboard/quiz/:id/replay/:sessionId` | `Dashboard/SubmissionReplay.tsx` | Owner / Admin | ✅ Tamamlandı |
+| `/profile` | `Profile/index.tsx` | User / Admin | ✅ Tamamlandı |
+| `/admin/*` | `Admin/index.tsx` → Route container | Admin | ✅ Tamamlandı |
+| `/admin` (index) | `Admin/AdminStats.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/users` | `Admin/AdminUsers.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/quizzes` | `Admin/AdminQuizzes.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/sessions` | `Admin/AdminSessions.tsx` | Admin | ✅ Tamamlandı |
+| `/admin/logs` | `Admin/AdminSystem.tsx` | Admin | ✅ Tamamlandı |
+| `*` | `Error/NotFound.tsx` | Public | ✅ Tamamlandı |
+| `/403` | `Error/Forbidden.tsx` | Public | ✅ Tamamlandı |
 
 ### PrivateRoute Kullanımı
 
@@ -627,6 +614,8 @@ editor.executeEdits("replay", [
 
 ## 10. Sayfa Detayları
 
+> **Not:** Tüm sayfa dosyaları şu anda iskelet (`return null`) aşamasındadır. Her sayfa dosyasının başında; bağlantı noktaları (hook'lar, store'lar, SignalR event'leri), local state, action flow ve ASCII layout diyagramı yorum satırları olarak belgelenmiştir. Bu bölümdeki ASCII şemaları ve akış açıklamaları, sayfaların **hedeflenen** davranışını tanımlamaktadır.
+
 ### 10.1 Ana Sayfa (`/`)
 
 ```
@@ -695,37 +684,121 @@ editor.executeEdits("replay", [
 
 ### Ortak UI Bileşenleri
 
-| Bileşen | Props | Açıklama |
-|---------|-------|---------|
-| `Button` | `variant`, `size`, `loading`, `disabled` | Primary / secondary / danger |
-| `Input` | `label`, `error`, `hint` | Form input, hata gösterimi |
-| `Select` | `options`, `value`, `onChange` | Dropdown |
-| `Modal` | `open`, `onClose`, `title` | Overlay modal |
-| `Toast` | `type`, `message`, `duration` | Başarı / hata / uyarı |
-| `Spinner` | `size` | Loading indicator |
-| `Badge` | `color` | Durum badge (Aktif/Taslak/Bitti) |
-| `Table` | `columns`, `data`, `pagination` | Veri tablosu |
-| `EmptyState` | `icon`, `title`, `description`, `action` | Boş liste durumu |
-| `ErrorBoundary` | `fallback` | React hata sınırı |
+Tüm bileşenler `src/components/ui/` altında gerçek implementasyona sahiptir. Her dosyanın başına designer için tasarım yorum satırları eklenmiştir.
 
-### Toast Sistemi
+| Bileşen | Ana Props | Açıklama |
+|---------|-----------|---------|
+| `Button` | `variant`, `size`, `loading`, `leftIcon` | primary/secondary/danger/ghost varyantlar |
+| `Input` | `label`, `error`, `helper`, forwardRef | Form input, hata/helper mesajı |
+| `Select` | `options[]`, `placeholder`, `error`, forwardRef | Dropdown |
+| `Textarea` | `label`, `error`, `helper`, forwardRef | Çok satırlı, resize-y |
+| `Badge` | `variant` | default/success/danger/warning/info/muted |
+| `Card` + `CardHeader` | `padding`, `title`, `action` | İçerik kutusu + başlık satırı |
+| `Modal` | `open`, `onClose`, `title`, `size`, `footer` | createPortal, Escape, backdrop |
+| `ConfirmDialog` | `onConfirm`, `danger`, `loading` | Modal üzerine onay ikili buton |
+| `Table<T>` | `columns`, `data`, `keyExtractor`, `loading`, `emptyText` | Generic veri tablosu |
+| `EmptyState` | `icon`, `title`, `description`, `action` | Boş liste durumu |
+| `PageHeader` | `title`, `subtitle`, `breadcrumbs`, `action` | Sayfa üst başlık |
+| `Spinner` | `size` (sm/md/lg) | animate-spin, role="status" |
+| `Toaster` | — | useToastStore'dan otomatik, fixed bottom-4 right-4 |
+| `DemoBanner` | — | VITE_DEMO_MODE=true iken görünür, App.tsx'te global |
+
+### Toast Kullanımı
 
 ```ts
-const { toast } = useToast();
-toast.success("Quiz başarıyla oluşturuldu");
-toast.error("Bir hata oluştu");
-toast.warning("Sınav süresi dolmak üzere");
+import { useToastStore } from "@/stores/toastStore";
+const { add } = useToastStore();
+add({ type: "success", message: "Quiz başarıyla oluşturuldu" });
+add({ type: "error",   message: "Bir hata oluştu" });
+add({ type: "warning", message: "Sınav süresi dolmak üzere" });
+add({ type: "info",    message: "Bağlantı yeniden kuruldu" });
 ```
 
-Toastlar `fixed bottom-4 right-4` konumunda, auto-dismiss (3sn), stacking destekler.
+Toast'lar `fixed bottom-4 right-4`, stacking, `dismiss(id)` ile manuel kapat.
 
 ### EmptyState Kullanımı
 
 ```tsx
 <EmptyState
-  icon={<ClipboardListIcon />}
+  icon="📋"
   title={t("dashboard.noQuizzes")}
   description={t("dashboard.noQuizzesDesc")}
-  action={<Button onClick={handleCreate}>{t("dashboard.createFirst")}</Button>}
+  action={{ label: t("dashboard.createFirst"), onClick: () => navigate("/dashboard/new") }}
 />
 ```
+
+---
+
+## 12. Demo Modu
+
+Backend olmadan, seed verisi üzerinden çalışan tam demo ortamı. Sunum, geliştirme ve UI testi için kullanılır.
+
+### Başlatma
+
+```bash
+cd frontend
+
+# Demo mod (seed data ile)
+npm run dev:demo
+
+# Normal mod (backend gerektirir)
+npm run dev
+
+# Demo build (statik dosya)
+npm run build:demo
+```
+
+Ortam değişkeni olarak da verilebilir:
+```bash
+VITE_DEMO_MODE=true npm run dev
+```
+
+### Demo Kimlik Bilgileri
+
+| Rol | E-posta | Şifre |
+|-----|---------|-------|
+| Admin | `admin@demo.com` | `demo1234` |
+| Kullanıcı | `user@demo.com` | `demo1234` |
+
+### Seed Verisi
+
+| Veri | Adet | Açıklama |
+|------|------|---------|
+| Kullanıcı | 8 | 1 Admin + 7 User |
+| Quiz | 3 | Draft / Active / Ended |
+| Soru | 8 | Coding, MultipleChoice, ShortAnswer, OutputPrediction, BugFix tipleri |
+| Session | 8 | 3 aktif (Active quizde) + 5 bitmiş (Ended quizde) |
+| Sonuç | 5 | Ended quiz için katılımcı puanları |
+| Replay | 1 | sess-ended-1 için diff array |
+
+### Mimari
+
+```
+VITE_DEMO_MODE=true
+       │
+       ▼
+src/api/client.ts
+  → adapter: mockAdapter   (src/api/mock/adapter.ts)
+       │
+       ├── Tüm GET/POST/PUT/DELETE/PATCH isteklerini karşılar
+       ├── In-memory mutable state (quiz/soru/kullanıcı CRUD çalışır)
+       ├── 120ms yapay gecikme (yükleme state'leri görünür)
+       └── Seed verisi: src/api/mock/seed.ts
+```
+
+### Nasıl Çalışır
+
+`VITE_DEMO_MODE=true` olduğunda Axios, gerçek HTTP isteği atmak yerine `mockAdapter` fonksiyonunu çağırır. Adapter, URL pattern'ini (`RegExp`) ve HTTP metodunu eşleştirerek uygun handler'ı çalıştırır ve sahte bir `AxiosResponse` döndürür.
+
+Mutasyonlar (quiz oluştur, kullanıcı sil, vb.) sayfa reload'a kadar in-memory state üzerinde gerçekten uygulanır.
+
+Kod execution mock'u: `POST /execute` → anında `{ jobId }` döner; `GET /execute/:jobId` 800ms sonra `"Passed"` döner (useExecute polling hook'u ile uyumlu).
+
+### Dosyalar
+
+| Dosya | Açıklama |
+|-------|---------|
+| `src/api/mock/seed.ts` | Tüm statik seed verisi |
+| `src/api/mock/adapter.ts` | Axios adapter + tüm route handler'ları |
+| `src/components/ui/DemoBanner.tsx` | Ekranın altındaki amber renkli demo bildirimi |
+| `.env.demo` | `VITE_DEMO_MODE=true` (Vite `--mode demo` ile okunur) |

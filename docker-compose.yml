@@ -7,15 +7,75 @@ services:
       POSTGRES_USER: codexam_user
       POSTGRES_PASSWORD: change-me
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codexam_user -d codexam"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: codexam-redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+      network: host
+    container_name: codexam-api
+    environment:
+      - ASPNETCORE_HTTP_PORTS=80
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=codexam;Username=codexam_user;Password=change-me
+      - ConnectionStrings__Redis=redis:6379
+      - Jwt__Secret=YourSuperSecretKeyWithAtLeast32CharactersForJWT!
+      - Jwt__ExpiresInMinutes=15
+      - Jwt__RefreshExpiresInDays=7
+      - Cors__AllowedOrigins__0=http://localhost:5173
+      - Cors__AllowedOrigins__1=http://localhost
+    ports:
+      - "5000:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+      network: host
+    container_name: codexam-worker
+    environment:
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=codexam;Username=codexam_user;Password=change-me
+      - ConnectionStrings__Redis=redis:6379
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      network: host
+    container_name: codexam-frontend
+    ports:
+      - "5173:80"
 
   nginx:
     image: nginx:1.27-alpine
@@ -25,8 +85,8 @@ services:
     volumes:
       - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - postgres
-      - redis
+      - api
+      - frontend
 
 volumes:
   postgres_data:

@@ -2,11 +2,11 @@
 
 ## Tüm servisleri dev modda başlat
 up:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+	docker compose -f docker-compose.yml up
 
 ## Arka planda başlat
 up-d:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+	docker compose -f docker-compose.yml up -d --build
 
 ## Durdur
 down:
@@ -14,16 +14,16 @@ down:
 
 ## Yeniden build et
 build:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml build
+	docker compose -f docker-compose.yml build
 
 ## Runner image'larını build et
 build-runners:
-	docker build -t codexam-python-runner     ./runners/python
-	docker build -t codexam-c-runner          ./runners/c
-	docker build -t codexam-cpp-runner        ./runners/cpp
-	docker build -t codexam-javascript-runner ./runners/javascript
-	docker build -t codexam-java-runner       ./runners/java
-	docker build -t codexam-go-runner         ./runners/go
+	docker build -t codexam-runner-python     ./runners/python
+	docker build -t codexam-runner-c          ./runners/c
+	docker build -t codexam-runner-cpp        ./runners/cpp
+	docker build -t codexam-runner-javascript ./runners/javascript
+	docker build -t codexam-runner-java       ./runners/java
+	docker build -t codexam-runner-go         ./runners/go
 
 ## Logları canlı izle
 logs:

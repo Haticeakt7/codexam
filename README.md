@@ -6,14 +6,17 @@ Docker tabanlı online coding sınav platformu. Kullanıcılar hesap açmadan ko
 
 ## Özellikler
 
-- **Anonim Kod Editörü** – Kayıt gerektirmeden Python, JavaScript veya C++ kodu yaz ve çalıştır
-- **Quiz Yönetimi** – Kayıtlı kullanıcılar sınav oluşturabilir, soru ekleyebilir, yayınlayabilir
+- **Anonim Kod Editörü** – Kayıt gerektirmeden Python, JavaScript, C++, C, Java veya Go kodu yaz ve çalıştır; dinamik dil listesi backend'den gelir
+- **Benzersiz Katılım Linki** – Her quiz için otomatik oluşturulan `/q/join/:token` adresi; katılımcılarla paylaşım için tek tıkla kopyalanabilir
+- **Quiz Zamanlama** – Başlangıç ve bitiş tarihleri; Gerçek Zamanlı mod (kesin pencere) ve Serbest Zamanlı mod (zaman aralığı) desteği
+- **Quiz Yönetimi** – Kayıtlı kullanıcılar sınav oluşturabilir, soru ekleyebilir, yayınlayabilir; yayınlama öncesi validasyon (soru zorunlu, gelecek tarih vb.)
 - **Kayıtsız Sınav Katılımı** – Katılımcılar hesap açmadan, quiz sahibinin tanımladığı formu doldurarak sınava girer; oturum `sessionToken` ile yürür
 - **Güvenli Docker Sandbox** – Kod `--network none`, `--read-only`, CPU/RAM/timeout limitleri olan izole bir container içinde çalışır
 - **Anti-Cheat** – Sekme değiştirme, fullscreen çıkışı ve pano girişimleri izlenir ve loglanır
 - **Gerçek Zamanlı İzleme (SignalR)** – Quiz sahibi aktif sınavı canlı takip edebilir, uyarı gönderebilir veya katılımcıyı sınavdan düşürebilir
 - **Submission Replay** – Her kod gönderimi diff-bazlı kaydedilir; quiz sahibi yazım sürecini adım adım oynatabilir
-- **Çoklu Dil ve Tema** – Türkçe/İngilizce arayüz; light/dark tema Monaco editörü ile senkronize çalışır
+- **Kişiselleştirilebilir Editör** – Font boyutu (+/-), Monaco teması (dark/light/high contrast), yeniden boyutlandırılabilir paneller; tercihler otomatik kaydedilir
+- **Çoklu Dil ve Tema** – Türkçe/İngilizce arayüz; light/dark UI teması; Monaco editörü bağımsız tema seçimi
 
 ---
 
@@ -38,7 +41,7 @@ Docker tabanlı online coding sınav platformu. Kullanıcılar hesap açmadan ko
 | Vite | 8 | Build tool |
 | TailwindCSS | 3 | Stil + CSS variable tema |
 | Monaco Editor (`@monaco-editor/react`) | 4.7 | Kod editörü |
-| Zustand | 5 | Global state (5 store) |
+| Zustand | 5 | Global state (6 store: auth, editor, exam, theme, i18n, toast, **preferences**) |
 | TanStack Query | v5 | Server state, cache |
 | React Router | v7 | Routing + korumalı rotalar |
 | Axios | 1.15 | HTTP client + interceptor |
@@ -229,3 +232,25 @@ refactor: extract quiz ownership check to policy handler
 | [docs/API.md](docs/API.md) | Endpoint listesi ve açıklamaları |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker Compose, Nginx, deploy adımları |
 | [ROADMAP.md](ROADMAP.md) | Faz bazlı geliştirme planı ve takvim |
+
+## Ekran Görüntüleri
+
+| Anasayfa | Quiz |
+|----------|------|
+| ![Anasayfa](screenshots/Anasayfa.png) | ![Quiz](screenshots/Quiz.png) |
+
+| Quizlerim Ekranı | Soru Tipleri |
+|------------------|--------------|
+| ![Quizlerim Ekranı](screenshots/Quizlerim%20Ekranı.png) | ![Soru Tipleri](screenshots/Soru%20Tipleri.png) |
+
+| Quiz Gözetmen Ekranı | Quiz Gözetmen Ekranı 2 |
+|----------------------|------------------------|
+| ![Quiz Gözetmen Ekranı](screenshots/Quiz%20Gözetmen%20Ekranı.png) | ![Quiz Gözetmen Ekranı 2](screenshots/Quiz%20Gözetmen%20Ekranı2.png) |
+
+| Gözetmen Uyarısı | Quiz Katılımcı Cevap Ekranı |
+|------------------|-----------------------------|
+| ![Gözetmen Uyarısı](screenshots/Gözetmen%20Uyarısı.png) | ![Quiz Katılımcı Cevap Ekranı](screenshots/Quiz%20Katılımcı%20Cevap%20Ekranı.png) |
+
+| Submission Replay | |
+|-------------------|-|
+| ![Submission Replay](screenshots/Submission%20Replay.png) | |

@@ -4,6 +4,36 @@
 
 ---
 
+## Mevcut İmplementasyon Durumu (2026-05-14) — TAMAMEN TAMAMLANDI
+
+| Bileşen | Durum | Notlar |
+|---------|-------|--------|
+| `Program.cs` | ✅ Tamamlandı | JWT, Serilog, FluentValidation, Swagger, CORS, RateLimit, SignalR, Hangfire, EnsureCreatedAsync |
+| `appsettings.json` | ✅ Tamamlandı | DB, Redis, JWT, CORS, RateLimit + **SupportedLanguages (6 dil)** |
+| `InfrastructureServiceExtensions` | ✅ Tamamlandı | EF Core, Hangfire Redis, tüm 8 servis DI kayıtları |
+| **8 Controller** | ✅ Tamamlandı | Auth, Execute, Quizzes, Questions, Sessions, Submissions, Admin, **Users (YENİ)** |
+| **8 Application Interface** | ✅ Tamamlandı | + IUserPreferencesService (YENİ) |
+| DTO sınıfları | ✅ Tamamlandı | + User/UserPreferencesDto, Execute/SupportedLanguageDto (YENİ) |
+| AuthService | ✅ Tamamlandı | Register (BCrypt), Login (JWT), Refresh (rotation), Me |
+| QuizService | ✅ Tamamlandı | CRUD, Publish (validasyon), Locking, **GetByParticipationToken** |
+| QuestionService | ✅ Tamamlandı | CRUD + TestCase yönetimi |
+| SessionService | ✅ Tamamlandı | Join (**mod bazlı zaman penceresi**), Submit, LogEvent, Results |
+| ExecutionService | ✅ Tamamlandı | Hangfire enqueue, polling |
+| SubmissionService | ✅ Tamamlandı | Puanlama, AppendReplayDiff, GetReplay |
+| AdminService | ✅ Tamamlandı | Stats, Users, Quizzes, Sessions, Logs |
+| **UserPreferencesService** | ✅ Tamamlandı | GET/PUT /api/users/me/preferences (YENİ) |
+| `MonitorHub` (SignalR) | ✅ Tamamlandı | JWT + SessionToken auth, warn/terminate |
+| `SessionTokenMiddleware` | ✅ Tamamlandı | X-Session-Token header doğrulama |
+| `ExceptionHandlerMiddleware` | ✅ Tamamlandı | 422 InvalidOperationException dahil |
+| `QuizOwnerRequirement` | ✅ Tamamlandı | RequireQuizOwner policy aktif |
+| Quiz entity (YENİ) | ✅ | ParticipationToken (uuid unique), StartsAt, EndsAt |
+| User entity (YENİ) | ✅ | PreferencesJson (nullable text) |
+| QuizStatus enum (YENİ) | ✅ | Published(3), Archived(4) eklendi — 5 durum |
+
+> ⚠️ **Kritik:** `EnsureCreatedAsync()` kullanılıyor (runtime migration DEĞİL). DB şema değişikliği için: `docker-compose down -v && docker-compose up --build`
+
+---
+
 ## İçindekiler
 
 1. [Tech Stack](#1-tech-stack)
@@ -50,111 +80,78 @@
 api/
 ├── CodExam.sln
 │
-├── CodExam.Api/                       # Sunum katmanı
+├── CodExam.Api/                       # Sunum katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── Controllers/
-│   │   ├── AuthController.cs
-│   │   ├── ExecuteController.cs
-│   │   ├── QuizController.cs
-│   │   ├── QuestionController.cs
-│   │   ├── SessionController.cs
-│   │   ├── SubmissionController.cs
-│   │   └── AdminController.cs
+│   │   ├── AuthController.cs          ✅ POST register/login/refresh, GET me
+│   │   ├── ExecuteController.cs       ✅ POST /execute, GET /execute/:jobId, GET /execute/languages (YENİ)
+│   │   ├── QuizzesController.cs       ✅ CRUD, publish, GET join/{token} (YENİ), submit, event, results
+│   │   ├── QuestionsController.cs     ✅ PUT/DELETE soru, PATCH order, test-case CRUD
+│   │   ├── SessionsController.cs      ✅ GET /sessions/:id/replay
+│   │   ├── SubmissionsController.cs   ✅ PATCH /submissions/:id/replay
+│   │   ├── AdminController.cs         ✅ stats, users CRUD, quizzes, sessions, logs
+│   │   └── UsersController.cs         ✅ GET/PUT /api/users/me/preferences (YENİ)
 │   ├── Hubs/
-│   │   └── MonitorHub.cs
-│   ├── Middleware/
-│   │   ├── SessionTokenMiddleware.cs
-│   │   └── ExceptionHandlerMiddleware.cs
+│   │   └── MonitorHub.cs              ✅ JWT + SessionToken auth, warn/terminate
+│   ├── Middlewares/
+│   │   ├── SessionTokenMiddleware.cs  ✅ X-Session-Token header doğrulama
+│   │   └── ExceptionHandlerMiddleware.cs ✅ 422 InvalidOperationException dahil
 │   ├── Filters/
-│   │   └── ValidationFilter.cs
-│   ├── Program.cs
-│   └── appsettings.json
+│   │   └── RequireSessionTokenAttribute.cs ✅ Attribute-based session auth
+│   ├── Program.cs                     ✅ EnsureCreatedAsync, JWT, Serilog, Hangfire, CORS, SignalR, seed
+│   └── appsettings.json               ✅ DB, Redis, JWT, CORS, RateLimit, SupportedLanguages (6 dil)
 │
-├── CodExam.Application/               # Uygulama katmanı
-│   ├── UseCases/
-│   │   ├── Auth/
-│   │   │   ├── RegisterCommand.cs
-│   │   │   ├── LoginCommand.cs
-│   │   │   └── RefreshTokenCommand.cs
-│   │   ├── Quiz/
-│   │   │   ├── CreateQuizCommand.cs
-│   │   │   ├── UpdateQuizCommand.cs
-│   │   │   ├── PublishQuizCommand.cs
-│   │   │   ├── JoinQuizCommand.cs
-│   │   │   └── SubmitAnswerCommand.cs
-│   │   ├── Execute/
-│   │   │   └── EnqueueExecutionCommand.cs
-│   │   └── Admin/
-│   │       ├── UpdateUserRoleCommand.cs
-│   │       └── TerminateSessionCommand.cs
+├── CodExam.Application/               # Uygulama katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── DTOs/
-│   │   ├── Auth/
-│   │   ├── Quiz/
-│   │   ├── Question/
-│   │   ├── Session/
-│   │   └── Admin/
-│   ├── Validators/
-│   │   ├── RegisterValidator.cs
-│   │   ├── LoginValidator.cs
-│   │   ├── CreateQuizValidator.cs
-│   │   ├── JoinQuizValidator.cs
-│   │   └── SubmitAnswerValidator.cs
+│   │   ├── Auth/                      ✅ RegisterRequest, LoginRequest, RefreshRequest, LoginResponse, AuthUserDto
+│   │   ├── Quiz/                      ✅ QuizDto (+participationToken/startsAt/endsAt), CreateQuizRequest, UpdateQuizRequest (+dates/clear flags)
+│   │   ├── Question/                  ✅ QuestionDto, CreateQuestionRequest, UpdateQuestionRequest, TestCaseDto, CreateTestCaseRequest
+│   │   ├── Session/                   ✅ QuizInfoResponse (+mode/startsAt/endsAt), JoinRequest, JoinResponse, SubmitRequest, ExamEventRequest
+│   │   ├── Execute/                   ✅ ExecuteRequest, ExecuteJobResponse, SupportedLanguageDto (YENİ)
+│   │   ├── Submission/                ✅ AppendReplayDiffRequest, ReplayResponse, QuizResultsResponse
+│   │   ├── Admin/                     ✅ StatsDto, AdminUserDto, AdminSessionDto, UpdateUserRequest
+│   │   └── User/                      ✅ UserPreferencesDto (YENİ) — editorTheme, fontSize, layoutJson
 │   ├── Interfaces/
-│   │   ├── IQuizRepository.cs
-│   │   ├── ISessionRepository.cs
-│   │   ├── IExecutionService.cs
-│   │   └── ISignalRNotifier.cs
-│   └── Mappings/
-│       └── MappingProfile.cs          # AutoMapper veya manuel mapping
+│   │   ├── IAuthService.cs            ✅ Register, Login, Refresh, GetMe
+│   │   ├── IQuizService.cs            ✅ + GetByParticipationTokenAsync (YENİ)
+│   │   ├── IQuestionService.cs        ✅
+│   │   ├── ISessionService.cs         ✅ Join (mod bazlı zaman penceresi doğrulama)
+│   │   ├── IExecutionService.cs       ✅
+│   │   ├── ISubmissionService.cs      ✅
+│   │   ├── IAdminService.cs           ✅
+│   │   └── IUserPreferencesService.cs ✅ GetAsync, UpdateAsync (YENİ)
+│   └── Validators/                    ⬜ FluentValidation kayıtlı, validator sınıfları yazılmadı
 │
-├── CodExam.Domain/                    # Domain katmanı
+├── CodExam.Domain/                    # Domain katmanı  ✅ TAMAMEN TAMAMLANDI
 │   ├── Entities/
-│   │   ├── User.cs
-│   │   ├── Quiz.cs
-│   │   ├── Question.cs
-│   │   ├── TestCase.cs
-│   │   ├── QuizSession.cs
-│   │   ├── Submission.cs
-│   │   ├── SubmissionReplay.cs
-│   │   ├── ExamEvent.cs
-│   │   ├── CodeExecution.cs
-│   │   ├── CompileJob.cs
-│   │   ├── AuditLog.cs
-│   │   └── SystemErrorLog.cs
-│   ├── Enums/
-│   │   ├── UserRole.cs
-│   │   ├── QuizStatus.cs
-│   │   ├── QuestionType.cs
-│   │   ├── ExecutionStatus.cs
-│   │   ├── EventType.cs
-│   │   └── EventSeverity.cs
-│   └── ValueObjects/
-│       └── FormSchema.cs
+│   │   ├── User.cs                    ✅ + PreferencesJson (nullable text) (YENİ)
+│   │   ├── Quiz.cs                    ✅ + ParticipationToken (Guid), StartsAt, EndsAt (YENİ)
+│   │   └── (diğer 10 entity)          ✅
+│   └── Enums/
+│       ├── QuizStatus.cs              ✅ Draft(0) | Active(1) | Ended(2) | Published(3) | Archived(4) — 2 yeni değer
+│       └── (diğer 6 enum)             ✅
 │
-├── CodExam.Infrastructure/            # Altyapı katmanı
+├── CodExam.Infrastructure/            # Altyapı katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── Persistence/
-│   │   ├── AppDbContext.cs
-│   │   ├── Migrations/
-│   │   └── Repositories/
-│   │       ├── QuizRepository.cs
-│   │       ├── SessionRepository.cs
-│   │       └── UserRepository.cs
+│   │   ├── AppDbContext.cs            ✅ 12 DbSet, soft delete filter, auto-timestamp
+│   │   ├── Configurations/
+│   │   │   ├── QuizConfiguration.cs   ✅ + participation_token unique index, starts_at/ends_at columns
+│   │   │   └── (diğer 12 config)      ✅
+│   │   └── Migrations/                ✅ InitialCreate — runtime'da kullanılmıyor (EnsureCreatedAsync)
 │   ├── Services/
-│   │   ├── JwtService.cs
-│   │   ├── PasswordService.cs
-│   │   ├── ExecutionService.cs
-│   │   ├── SubmissionEvaluationService.cs
-│   │   ├── ReplayDiffService.cs
-│   │   └── SignalRNotifier.cs
-│   └── Workers/
-│       └── DockerRunnerService.cs     # (worker/ projesine taşınabilir)
+│   │   ├── AuthService.cs             ✅ BCrypt hash, JWT üretimi, refresh token rotation
+│   │   ├── QuizService.cs             ✅ CRUD, publish validasyon, locking, GetByParticipationToken
+│   │   ├── QuestionService.cs         ✅ CRUD + TestCase yönetimi
+│   │   ├── SessionService.cs          ✅ Join (RealTime/FreeStyle zaman penceresi), submit, results
+│   │   ├── ExecutionService.cs        ✅ Hangfire enqueue, job status polling
+│   │   ├── SubmissionService.cs       ✅ Puanlama, diff replay kayıt, results
+│   │   ├── AdminService.cs            ✅ Stats, users, quizzes, sessions, logs
+│   │   └── UserPreferencesService.cs  ✅ User.PreferencesJson serialize/deserialize (YENİ)
+│   └── InfrastructureServiceExtensions.cs ✅ EF Core + Hangfire Redis + 8 servis DI kayıtları
 │
 └── CodExam.Worker/                    # Ayrı Worker Service projesi
-    ├── Program.cs
-    ├── Workers/
-    │   └── HangfireWorker.cs
-    ├── Services/
-    │   └── DockerRunnerService.cs
-    └── appsettings.json
+    ├── Program.cs                     ✅ Worker loop çalışıyor
+    └── Services/
+        └── DockerRunnerService.cs     ⬜ Docker SDK entegrasyonu yazılmamış
 ```
 
 ---
@@ -418,21 +415,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 ## 6. Yetkilendirme Politikaları
 
+### Mevcut Durum (aktif)
+
 ```csharp
+// Program.cs — şu anda iki politika aktif
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdmin", p =>
-        p.RequireRole("Admin"));
-
-    options.AddPolicy("RequireUser", p =>
-        p.RequireRole("User", "Admin"));
-
-    options.AddPolicy("RequireQuizOwner", p =>
-        p.AddRequirements(new QuizOwnerRequirement()));
+    options.AddPolicy("RequireAdmin", p => p.RequireRole("Admin"));
+    options.AddPolicy("RequireUser",  p => p.RequireRole("User", "Admin"));
 });
 ```
 
-### `QuizOwnerRequirement` Handler
+### Hedeflenen Durum (henüz yazılmadı)
+
+```csharp
+// QuizOwnerRequirement — owner veya Admin erişimi için
+options.AddPolicy("RequireQuizOwner", p =>
+    p.AddRequirements(new QuizOwnerRequirement()));
+```
+
+### `QuizOwnerRequirement` Handler (planlandı, yazılmadı)
 
 ```csharp
 public class QuizOwnerHandler : AuthorizationHandler<QuizOwnerRequirement>
@@ -441,15 +443,10 @@ public class QuizOwnerHandler : AuthorizationHandler<QuizOwnerRequirement>
         AuthorizationHandlerContext ctx,
         QuizOwnerRequirement req)
     {
+        if (ctx.User.IsInRole("Admin")) { ctx.Succeed(req); return; }
+
         var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
         var quizId = httpCtx.GetRouteValue("id")?.ToString();
-
-        if (ctx.User.IsInRole("Admin"))
-        {
-            ctx.Succeed(req);
-            return;
-        }
-
         var quiz = await quizRepo.FindAsync(Guid.Parse(quizId!));
         if (quiz?.OwnerId.ToString() == userId)
             ctx.Succeed(req);
@@ -457,16 +454,19 @@ public class QuizOwnerHandler : AuthorizationHandler<QuizOwnerRequirement>
 }
 ```
 
-### Controller Kullanımı
+### Controller'larda Mevcut Kullanım
 
 ```csharp
-[Authorize(Policy = "RequireQuizOwner")]
+// Quiz sahipliği şu anda UserId → quizService içinde kontrol edilmesi bekleniyor
+[Authorize(Policy = "RequireUser")]
 [HttpGet("{id}/results")]
-public async Task<IActionResult> GetResults(Guid id) { ... }
+public async Task<IActionResult> GetResults(Guid id)
+    => Ok(await submissionService.GetResultsAsync(id, UserId));
 
+// Admin endpoint
 [Authorize(Policy = "RequireAdmin")]
-[HttpGet("/api/admin/users")]
-public async Task<IActionResult> GetUsers() { ... }
+[Route("api/admin")]
+public class AdminController : ControllerBase { ... }
 ```
 
 ---
@@ -510,29 +510,38 @@ var session = HttpContext.Items["CurrentSession"] as QuizSession
 
 ## 8. Servisler
 
-### `JwtService`
+> **Not:** Tüm servis sınıfları (`AuthService`, `QuizService`, vb.) `CodExam.Infrastructure/Services/` altında mevcut ve DI'ya kayıtlı. İş mantığı henüz yazılmamış — servisler şu anda `throw new NotImplementedException()` veya boş döner. İmplementasyon sırası: Auth → Quiz → Question → Session → Execute → Submission → Admin.
+
+### Kayıtlı Servisler (DI)
 
 ```csharp
-public interface IJwtService
-{
-    string GenerateAccessToken(User user);
-    string GenerateRefreshToken();
-    ClaimsPrincipal? ValidateToken(string token);
-}
+// InfrastructureServiceExtensions.cs
+services.AddScoped<IAuthService,       AuthService>();
+services.AddScoped<IExecutionService,  ExecutionService>();
+services.AddScoped<IQuizService,       QuizService>();
+services.AddScoped<IQuestionService,   QuestionService>();
+services.AddScoped<ISessionService,    SessionService>();
+services.AddScoped<IAdminService,      AdminService>();
+services.AddScoped<ISubmissionService, SubmissionService>();
 ```
 
-### `PasswordService`
+### `IAuthService` (planlandı)
 
 ```csharp
-public interface IPasswordService
-{
-    string Hash(string password);
-    bool Verify(string password, string hash);
-}
-// BCrypt work factor: 12
+Task<LoginResponse> RegisterAsync(RegisterRequest request);
+Task<LoginResponse> LoginAsync(LoginRequest request);
+Task<LoginResponse> RefreshAsync(RefreshRequest request);
+Task<AuthUserDto>   GetMeAsync(Guid userId);
 ```
 
-### `ExecutionService`
+Uygulama notları:
+- Email benzersizliği kontrol (case-insensitive)
+- `BCrypt.HashPassword(password)` work factor 12
+- Access token 15 dakika, refresh token 7 gün
+- Refresh token rotation: eski invalidate, yeni üret
+- JWT: sub (userId), email, role, jti, iat, exp claim'leri
+
+### `IExecutionService`
 
 ```csharp
 public interface IExecutionService
@@ -861,13 +870,14 @@ catch (Exception ex)
   "IpRateLimiting": {
     "EnableEndpointRateLimiting": true,
     "StackBlockedRequests": false,
+    "RealIpHeader": "X-Real-IP",
+    "ClientIdHeader": "X-ClientId",
     "HttpStatusCode": 429,
     "GeneralRules": [
-      {
-        "Endpoint": "POST:/api/execute",
-        "Period": "1m",
-        "Limit": 10
-      }
+      { "Endpoint": "*:/api/execute",       "Period": "1m", "Limit": 10 },
+      { "Endpoint": "*:/api/auth/login",    "Period": "1m", "Limit": 5  },
+      { "Endpoint": "*:/api/auth/register", "Period": "1m", "Limit": 3  },
+      { "Endpoint": "*:/api/*/event",       "Period": "1m", "Limit": 60 }
     ]
   }
 }
@@ -922,7 +932,91 @@ catch (Exception ex) => Results.Problem(statusCode: 500);
 
 ---
 
-## 15. Swagger / OpenAPI
+## 15. Gerçek Endpoint Listesi (Mevcut Controller'lardan)
+
+> Aşağıdaki tüm endpoint'ler controller'da tanımlıdır; servis implementasyonu tamamlandıkça çalışır hale gelecek.
+
+### Auth — `POST/GET /api/auth`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| POST | `/api/auth/register` | Public | Kayıt ol → `LoginResponse` |
+| POST | `/api/auth/login` | Public | Giriş → `LoginResponse` |
+| POST | `/api/auth/refresh` | Public | Token yenile → `LoginResponse` |
+| GET | `/api/auth/me` | JWT | Mevcut kullanıcı bilgisi |
+
+### Execute — `POST/GET /api/execute`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| POST | `/api/execute` | Public | Kod çalıştır → `{ jobId }` |
+| GET | `/api/execute/{jobId}` | Public | Job durumu sorgula → `ExecuteJobResponse` |
+
+### Quizzes — `/api/quizzes`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| GET | `/api/quizzes` | RequireUser | Kullanıcının quizleri |
+| POST | `/api/quizzes` | RequireUser | Quiz oluştur |
+| GET | `/api/quizzes/{id}` | RequireUser | Quiz detayı |
+| PUT | `/api/quizzes/{id}` | RequireUser | Quiz güncelle |
+| DELETE | `/api/quizzes/{id}` | RequireUser | Quiz sil |
+| POST | `/api/quizzes/{id}/publish` | RequireUser | Quiz yayınla |
+| GET | `/api/quizzes/{id}/info` | Public | Katılımcı bilgi ekranı |
+| GET | `/api/quizzes/{id}/questions` | RequireUser | Soru listesi |
+| POST | `/api/quizzes/{id}/questions` | RequireUser | Soru ekle |
+| GET | `/api/quizzes/{id}/sessions` | RequireUser | Quiz oturumları |
+| GET | `/api/quizzes/{id}/results` | RequireUser | Sonuçlar |
+| POST | `/api/quizzes/{id}/join` | Public | Sınava katıl → session token |
+| POST | `/api/quizzes/{id}/submit` | X-Session-Token | Cevap gönder |
+| POST | `/api/quizzes/{id}/event` | X-Session-Token | Anti-cheat event logla |
+
+### Questions — `/api/questions`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| PUT | `/api/questions/{id}` | RequireUser | Soru güncelle |
+| DELETE | `/api/questions/{id}` | RequireUser | Soru sil |
+| PATCH | `/api/questions/{id}/order` | RequireUser | Soru sırası değiştir |
+| GET | `/api/questions/{id}/test-cases` | RequireUser | Test case listesi |
+| POST | `/api/questions/{id}/test-cases` | RequireUser | Test case ekle |
+| DELETE | `/api/questions/{questionId}/test-cases/{caseId}` | RequireUser | Test case sil |
+
+### Sessions — `/api/sessions`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| GET | `/api/sessions/{sessionId}/replay` | RequireUser | Replay diff listesi |
+
+### Submissions — `/api/submissions`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| PATCH | `/api/submissions/{id}/replay` | X-Session-Token | Replay diff ekle |
+
+### Admin — `/api/admin`
+
+| Method | Path | Yetki | Açıklama |
+|--------|------|-------|---------|
+| GET | `/api/admin/stats` | RequireAdmin | Sistem istatistikleri |
+| GET | `/api/admin/users` | RequireAdmin | Kullanıcı listesi (search, role, page, pageSize) |
+| PUT | `/api/admin/users/{id}` | RequireAdmin | Kullanıcı güncelle (rol değiştir) |
+| DELETE | `/api/admin/users/{id}` | RequireAdmin | Kullanıcı sil |
+| GET | `/api/admin/quizzes` | RequireAdmin | Tüm quizler |
+| DELETE | `/api/admin/quizzes/{id}` | RequireAdmin | Quiz sil |
+| GET | `/api/admin/sessions` | RequireAdmin | Tüm oturumlar |
+| DELETE | `/api/admin/sessions/{id}` | RequireAdmin | Oturumu zorla bitir |
+
+### Health
+
+| Method | Path | Açıklama |
+|--------|------|---------|
+| GET | `/api/health` | `{ status: "healthy" }` |
+| GET | `/api/health/db` | EF Core DB health check |
+
+---
+
+## 16. Swagger / OpenAPI
 
 ```csharp
 builder.Services.AddSwaggerGen(c =>

@@ -1,24 +1,46 @@
+// ==========================================================
+// AdminDashboard – Admin Panel Router
+// ROUTE: /admin/*  (PrivateRoute: sadece Admin)
+// ==========================================================
+//
+// AMAÇ:
+//   Admin alt sayfaları için routing container.
+//   AdminLayout'u sararak /admin altındaki tüm rotaları yönetir.
+//
+// ALT ROTALAR:
+//   /admin           → AdminStats   (varsayılan)
+//   /admin/users     → AdminUsers
+//   /admin/quizzes   → AdminQuizzes
+//   /admin/sessions  → AdminSessions
+//   /admin/system    → AdminSystem
+//
+// YAPISI:
+//   Bu bileşen AdminLayout içinde React Router <Routes> + <Route> kullanır.
+//   Her alt bileşen kendi sayfasında bulunur ve lazy import ile yüklenebilir.
+//
+// NOT:
+//   AdminLayout bileşeni sidebar navigasyonu ve header'ı içerir.
+//   Bu bileşen sadece routing sorumluluğunu üstlenir.
+// ==========================================================
+
 import { Routes, Route } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import AdminStats from "./AdminStats";
+import AdminUsers from "./AdminUsers";
+import AdminQuizzes from "./AdminQuizzes";
+import AdminSessions from "./AdminSessions";
+import AdminSystem from "./AdminSystem";
 
 export default function AdminDashboard() {
-  const { t } = useTranslation();
   return (
-    <div className="flex h-screen bg-bg text-text">
-      <aside className="w-56 border-r border-border bg-surface p-4">
-        <p className="font-bold text-primary">CodExam Admin</p>
-        <nav className="mt-4 space-y-1 text-sm text-muted">
-          <a href="/admin/users"   className="block hover:text-text">{t("admin.users")}</a>
-          <a href="/admin/quizzes" className="block hover:text-text">{t("admin.quizzes")}</a>
-          <a href="/admin/sessions"className="block hover:text-text">{t("admin.sessions")}</a>
-          <a href="/admin/system"  className="block hover:text-text">{t("admin.logs")}</a>
-        </nav>
-      </aside>
-      <main className="flex-1 overflow-auto p-6">
-        <Routes>
-          <Route index element={<p>{t("admin.stats")}</p>} />
-        </Routes>
-      </main>
-    </div>
+    <DashboardLayout>
+      <Routes>
+        <Route index element={<AdminStats />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="quizzes" element={<AdminQuizzes />} />
+        <Route path="sessions" element={<AdminSessions />} />
+        <Route path="system" element={<AdminSystem />} />
+      </Routes>
+    </DashboardLayout>
   );
 }
