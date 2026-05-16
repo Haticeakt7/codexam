@@ -4,23 +4,33 @@
 
 ---
 
-## Mevcut İmplementasyon Durumu (2026-04-29)
+## Mevcut İmplementasyon Durumu (2026-05-14) — TAMAMEN TAMAMLANDI
 
 | Bileşen | Durum | Notlar |
 |---------|-------|--------|
-| `Program.cs` | ✅ Tamamlandı | JWT, Serilog, FluentValidation, Swagger, CORS, RateLimit, SignalR, Hangfire |
-| `appsettings.json` | ✅ Tamamlandı | Tüm konfigürasyon blokları mevcut |
-| `InfrastructureServiceExtensions` | ✅ Tamamlandı | EF Core, Hangfire Redis, tüm servis DI kayıtları |
-| 7 Controller | ✅ Tamamlandı | Route tanımları ve yetki attribute'ları gerçek implementasyon |
-| 7 Application Interface | ✅ Tamamlandı | IAuthService, IQuizService, IQuestionService, ISessionService, IExecutionService, ISubmissionService, IAdminService |
-| DTO sınıfları | ✅ Tamamlandı | Auth, Quiz, Question, Session, Execute, Submission, Admin klasörleri |
-| 7 Infrastructure Service | ⬜ Stub | Sınıflar mevcut, iş mantığı yazılmamış (`throw NotImplementedException`) |
-| `MonitorHub` (SignalR) | ⬜ Yazılmadı | Program.cs'de yorum satırı olarak bekliyor |
-| `SessionTokenMiddleware` | ⬜ Yazılmadı | Planlandı |
-| `ExceptionHandlerMiddleware` | ⬜ Yazılmadı | Planlandı |
-| `QuizOwnerRequirement` | ⬜ Yazılmadı | Yalnızca RequireAdmin + RequireUser politikaları aktif |
-| Validators | ⬜ Yazılmadı | FluentValidation kayıtlı, validator sınıfları yazılmamış |
-| Repository katmanı | ⬜ Yazılmadı | Servisler doğrudan DbContext kullanacak |
+| `Program.cs` | ✅ Tamamlandı | JWT, Serilog, FluentValidation, Swagger, CORS, RateLimit, SignalR, Hangfire, EnsureCreatedAsync |
+| `appsettings.json` | ✅ Tamamlandı | DB, Redis, JWT, CORS, RateLimit + **SupportedLanguages (6 dil)** |
+| `InfrastructureServiceExtensions` | ✅ Tamamlandı | EF Core, Hangfire Redis, tüm 8 servis DI kayıtları |
+| **8 Controller** | ✅ Tamamlandı | Auth, Execute, Quizzes, Questions, Sessions, Submissions, Admin, **Users (YENİ)** |
+| **8 Application Interface** | ✅ Tamamlandı | + IUserPreferencesService (YENİ) |
+| DTO sınıfları | ✅ Tamamlandı | + User/UserPreferencesDto, Execute/SupportedLanguageDto (YENİ) |
+| AuthService | ✅ Tamamlandı | Register (BCrypt), Login (JWT), Refresh (rotation), Me |
+| QuizService | ✅ Tamamlandı | CRUD, Publish (validasyon), Locking, **GetByParticipationToken** |
+| QuestionService | ✅ Tamamlandı | CRUD + TestCase yönetimi |
+| SessionService | ✅ Tamamlandı | Join (**mod bazlı zaman penceresi**), Submit, LogEvent, Results |
+| ExecutionService | ✅ Tamamlandı | Hangfire enqueue, polling |
+| SubmissionService | ✅ Tamamlandı | Puanlama, AppendReplayDiff, GetReplay |
+| AdminService | ✅ Tamamlandı | Stats, Users, Quizzes, Sessions, Logs |
+| **UserPreferencesService** | ✅ Tamamlandı | GET/PUT /api/users/me/preferences (YENİ) |
+| `MonitorHub` (SignalR) | ✅ Tamamlandı | JWT + SessionToken auth, warn/terminate |
+| `SessionTokenMiddleware` | ✅ Tamamlandı | X-Session-Token header doğrulama |
+| `ExceptionHandlerMiddleware` | ✅ Tamamlandı | 422 InvalidOperationException dahil |
+| `QuizOwnerRequirement` | ✅ Tamamlandı | RequireQuizOwner policy aktif |
+| Quiz entity (YENİ) | ✅ | ParticipationToken (uuid unique), StartsAt, EndsAt |
+| User entity (YENİ) | ✅ | PreferencesJson (nullable text) |
+| QuizStatus enum (YENİ) | ✅ | Published(3), Archived(4) eklendi — 5 durum |
+
+> ⚠️ **Kritik:** `EnsureCreatedAsync()` kullanılıyor (runtime migration DEĞİL). DB şema değişikliği için: `docker-compose down -v && docker-compose up --build`
 
 ---
 
@@ -70,75 +80,73 @@
 api/
 ├── CodExam.sln
 │
-├── CodExam.Api/                       # Sunum katmanı  ✅ İskelet tamamlandı
+├── CodExam.Api/                       # Sunum katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── Controllers/
 │   │   ├── AuthController.cs          ✅ POST register/login/refresh, GET me
-│   │   ├── ExecuteController.cs       ✅ POST /execute, GET /execute/:jobId
-│   │   ├── QuizzesController.cs       ✅ CRUD + publish + join + submit + event + results
+│   │   ├── ExecuteController.cs       ✅ POST /execute, GET /execute/:jobId, GET /execute/languages (YENİ)
+│   │   ├── QuizzesController.cs       ✅ CRUD, publish, GET join/{token} (YENİ), submit, event, results
 │   │   ├── QuestionsController.cs     ✅ PUT/DELETE soru, PATCH order, test-case CRUD
 │   │   ├── SessionsController.cs      ✅ GET /sessions/:id/replay
 │   │   ├── SubmissionsController.cs   ✅ PATCH /submissions/:id/replay
-│   │   └── AdminController.cs         ✅ stats, users CRUD, quizzes, sessions
+│   │   ├── AdminController.cs         ✅ stats, users CRUD, quizzes, sessions, logs
+│   │   └── UsersController.cs         ✅ GET/PUT /api/users/me/preferences (YENİ)
 │   ├── Hubs/
-│   │   └── MonitorHub.cs              ⬜ Henüz yazılmadı
-│   ├── Middleware/
-│   │   ├── SessionTokenMiddleware.cs  ⬜ Henüz yazılmadı
-│   │   └── ExceptionHandlerMiddleware.cs ⬜ Henüz yazılmadı
-│   ├── Program.cs                     ✅ JWT, Serilog, FluentValidation, Swagger,
-│   │                                     CORS, RateLimit, SignalR, Hangfire kayıtları
-│   └── appsettings.json               ✅ DB, Redis, JWT, CORS, RateLimit konfigürasyonu
+│   │   └── MonitorHub.cs              ✅ JWT + SessionToken auth, warn/terminate
+│   ├── Middlewares/
+│   │   ├── SessionTokenMiddleware.cs  ✅ X-Session-Token header doğrulama
+│   │   └── ExceptionHandlerMiddleware.cs ✅ 422 InvalidOperationException dahil
+│   ├── Filters/
+│   │   └── RequireSessionTokenAttribute.cs ✅ Attribute-based session auth
+│   ├── Program.cs                     ✅ EnsureCreatedAsync, JWT, Serilog, Hangfire, CORS, SignalR, seed
+│   └── appsettings.json               ✅ DB, Redis, JWT, CORS, RateLimit, SupportedLanguages (6 dil)
 │
-├── CodExam.Application/               # Uygulama katmanı
+├── CodExam.Application/               # Uygulama katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── DTOs/
-│   │   ├── Auth/                      ✅ RegisterRequest, LoginRequest, RefreshRequest,
-│   │   │                                 LoginResponse, AuthUserDto
-│   │   ├── Quiz/                      ✅ QuizDto, CreateQuizRequest, UpdateQuizRequest
-│   │   ├── Question/                  ✅ QuestionDto, CreateQuestionRequest, UpdateQuestionRequest,
-│   │   │                                 TestCaseDto, CreateTestCaseRequest
-│   │   ├── Session/                   ✅ QuizInfoResponse, JoinRequest, JoinResponse,
-│   │   │                                 SubmitRequest, ExamEventRequest
-│   │   ├── Execute/                   ✅ ExecuteRequest, ExecuteJobResponse
-│   │   ├── Submission/                ✅ AppendReplayDiffRequest, ReplayResponse,
-│   │   │                                 QuizResultsResponse
-│   │   └── Admin/                     ✅ StatsDto, AdminUserDto, AdminSessionDto,
-│   │                                     UpdateUserRequest
+│   │   ├── Auth/                      ✅ RegisterRequest, LoginRequest, RefreshRequest, LoginResponse, AuthUserDto
+│   │   ├── Quiz/                      ✅ QuizDto (+participationToken/startsAt/endsAt), CreateQuizRequest, UpdateQuizRequest (+dates/clear flags)
+│   │   ├── Question/                  ✅ QuestionDto, CreateQuestionRequest, UpdateQuestionRequest, TestCaseDto, CreateTestCaseRequest
+│   │   ├── Session/                   ✅ QuizInfoResponse (+mode/startsAt/endsAt), JoinRequest, JoinResponse, SubmitRequest, ExamEventRequest
+│   │   ├── Execute/                   ✅ ExecuteRequest, ExecuteJobResponse, SupportedLanguageDto (YENİ)
+│   │   ├── Submission/                ✅ AppendReplayDiffRequest, ReplayResponse, QuizResultsResponse
+│   │   ├── Admin/                     ✅ StatsDto, AdminUserDto, AdminSessionDto, UpdateUserRequest
+│   │   └── User/                      ✅ UserPreferencesDto (YENİ) — editorTheme, fontSize, layoutJson
 │   ├── Interfaces/
 │   │   ├── IAuthService.cs            ✅ Register, Login, Refresh, GetMe
-│   │   ├── IQuizService.cs            ✅ GetUserQuizzes, Create, Get, Update, Delete,
-│   │   │                                 Publish, GetAll
-│   │   ├── IQuestionService.cs        ✅ GetQuestions, Create, Update, Delete, UpdateOrder,
-│   │   │                                 GetTestCases, CreateTestCase, DeleteTestCase
-│   │   ├── ISessionService.cs         ✅ GetQuizInfo, Join, Submit, LogEvent,
-│   │   │                                 GetSessionsByQuiz, GetAllSessions, ForceEnd
-│   │   ├── IExecutionService.cs       ✅ Enqueue, GetJobStatus
-│   │   ├── ISubmissionService.cs      ✅ AppendReplayDiff, GetReplay, GetResults
-│   │   └── IAdminService.cs           ✅ GetStats, GetUsers, UpdateUser, DeleteUser,
-│   │                                     GetAllQuizzes, DeleteQuiz
-│   └── Validators/                    ⬜ Henüz yazılmadı (FluentValidation kayıtlı)
+│   │   ├── IQuizService.cs            ✅ + GetByParticipationTokenAsync (YENİ)
+│   │   ├── IQuestionService.cs        ✅
+│   │   ├── ISessionService.cs         ✅ Join (mod bazlı zaman penceresi doğrulama)
+│   │   ├── IExecutionService.cs       ✅
+│   │   ├── ISubmissionService.cs      ✅
+│   │   ├── IAdminService.cs           ✅
+│   │   └── IUserPreferencesService.cs ✅ GetAsync, UpdateAsync (YENİ)
+│   └── Validators/                    ⬜ FluentValidation kayıtlı, validator sınıfları yazılmadı
 │
-├── CodExam.Domain/                    # Domain katmanı  ✅ Tamamen tamamlandı
-│   ├── Entities/                      ✅ 12 entity (User, Quiz, Question, TestCase,
-│   │                                     QuizSession, Submission, SubmissionReplay,
-│   │                                     ExamEvent, CodeExecution, CompileJob,
-│   │                                     AuditLog, SystemErrorLog)
-│   └── Enums/                         ✅ 7 enum (UserRole, QuizStatus, QuizMode,
-│                                         QuestionType, ExecutionStatus, EventType,
-│                                         EventSeverity)
+├── CodExam.Domain/                    # Domain katmanı  ✅ TAMAMEN TAMAMLANDI
+│   ├── Entities/
+│   │   ├── User.cs                    ✅ + PreferencesJson (nullable text) (YENİ)
+│   │   ├── Quiz.cs                    ✅ + ParticipationToken (Guid), StartsAt, EndsAt (YENİ)
+│   │   └── (diğer 10 entity)          ✅
+│   └── Enums/
+│       ├── QuizStatus.cs              ✅ Draft(0) | Active(1) | Ended(2) | Published(3) | Archived(4) — 2 yeni değer
+│       └── (diğer 6 enum)             ✅
 │
-├── CodExam.Infrastructure/            # Altyapı katmanı
+├── CodExam.Infrastructure/            # Altyapı katmanı  ✅ TAMAMEN İMPLEMENTE EDİLDİ
 │   ├── Persistence/
 │   │   ├── AppDbContext.cs            ✅ 12 DbSet, soft delete filter, auto-timestamp
-│   │   ├── Configurations/            ✅ 13 IEntityTypeConfiguration (snake_case, JSONB)
-│   │   └── Migrations/                ✅ InitialCreate — 12 tablo PostgreSQL'de aktif
+│   │   ├── Configurations/
+│   │   │   ├── QuizConfiguration.cs   ✅ + participation_token unique index, starts_at/ends_at columns
+│   │   │   └── (diğer 12 config)      ✅
+│   │   └── Migrations/                ✅ InitialCreate — runtime'da kullanılmıyor (EnsureCreatedAsync)
 │   ├── Services/
-│   │   ├── AuthService.cs             ⬜ Stub (kayıtlı, implement edilmemiş)
-│   │   ├── QuizService.cs             ⬜ Stub
-│   │   ├── QuestionService.cs         ⬜ Stub
-│   │   ├── SessionService.cs          ⬜ Stub
-│   │   ├── ExecutionService.cs        ⬜ Stub
-│   │   ├── SubmissionService.cs       ⬜ Stub
-│   │   └── AdminService.cs            ⬜ Stub
-│   └── InfrastructureServiceExtensions.cs ✅ EF Core + Hangfire Redis + tüm DI kayıtları
+│   │   ├── AuthService.cs             ✅ BCrypt hash, JWT üretimi, refresh token rotation
+│   │   ├── QuizService.cs             ✅ CRUD, publish validasyon, locking, GetByParticipationToken
+│   │   ├── QuestionService.cs         ✅ CRUD + TestCase yönetimi
+│   │   ├── SessionService.cs          ✅ Join (RealTime/FreeStyle zaman penceresi), submit, results
+│   │   ├── ExecutionService.cs        ✅ Hangfire enqueue, job status polling
+│   │   ├── SubmissionService.cs       ✅ Puanlama, diff replay kayıt, results
+│   │   ├── AdminService.cs            ✅ Stats, users, quizzes, sessions, logs
+│   │   └── UserPreferencesService.cs  ✅ User.PreferencesJson serialize/deserialize (YENİ)
+│   └── InfrastructureServiceExtensions.cs ✅ EF Core + Hangfire Redis + 8 servis DI kayıtları
 │
 └── CodExam.Worker/                    # Ayrı Worker Service projesi
     ├── Program.cs                     ✅ Worker loop çalışıyor

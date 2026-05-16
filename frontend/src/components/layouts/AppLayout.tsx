@@ -59,56 +59,78 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-surface/95 px-6 backdrop-blur-sm">
-        <Link to="/" className="text-lg font-bold text-primary">
-          CodExam
-        </Link>
+      <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0 flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/icon.png" alt="logo" className="h-8 w-8 rounded-md" />
+            <span className="text-xl font-bold tracking-tight text-primary">CodExam</span>
+          </Link>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setUiLang(uiLang === "tr" ? "en" : "tr")}
-            className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text"
-          >
-            {uiLang.toUpperCase()}
-          </button>
-
-          <button
-            onClick={toggleTheme}
-            className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm transition-colors hover:bg-surface"
-          >
-            {uiTheme === "dark" ? "☀" : "☾"}
-          </button>
-
-          {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              {user?.role === "Admin" && (
-                <Link to="/admin" className="text-sm text-muted hover:text-text transition-colors">
-                  {t("nav.admin")}
-                </Link>
-              )}
-              <Link to="/dashboard" className="text-sm text-muted hover:text-text transition-colors">
-                {t("nav.dashboard")}
-              </Link>
+          {/* Right side controls */}
+          <div className="flex items-center gap-1.5">
+            {/* Language + Theme toggles */}
+            <div className="flex items-center rounded-lg border border-border bg-surface2 p-0.5">
               <button
-                onClick={handleLogout}
-                className="text-sm text-muted hover:text-text transition-colors"
+                onClick={() => setUiLang(uiLang === "tr" ? "en" : "tr")}
+                className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-muted transition-colors hover:bg-surface hover:text-text"
               >
-                {t("nav.logout")}
+                {uiLang === "tr" ? "🇹🇷 TR" : "🇬🇧 EN"}
+              </button>
+              <div className="h-4 w-px bg-border" />
+              <button
+                onClick={toggleTheme}
+                className="rounded-md px-2.5 py-1.5 text-sm leading-none transition-colors hover:bg-surface"
+                aria-label="Tema değiştir"
+              >
+                {uiTheme === "dark" ? "☀" : "☾"}
               </button>
             </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm text-muted hover:text-text transition-colors">
-                {t("nav.login")}
-              </Link>
-              <Link
-                to="/register"
-                className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors"
-              >
-                {t("nav.register")}
-              </Link>
-            </div>
-          )}
+
+            {/* Divider */}
+            <div className="hidden h-5 w-px bg-border sm:block" />
+
+            {/* Auth links */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1">
+                {user?.role === "Admin" && (
+                  <Link
+                    to="/admin"
+                    className="hidden sm:block rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface2 hover:text-text"
+                  >
+                    {t("nav.admin")}
+                  </Link>
+                )}
+                <Link
+                  to="/dashboard"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface2 hover:text-text"
+                >
+                  {t("nav.dashboard")}
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-danger/40 hover:bg-danger/10 hover:text-danger"
+                >
+                  {t("nav.logout")}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface2 hover:text-text"
+                >
+                  {t("nav.login")}
+                </Link>
+                <Link
+                  to="/register"
+                  className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover"
+                >
+                  {t("nav.register")}
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

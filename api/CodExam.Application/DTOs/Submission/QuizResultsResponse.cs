@@ -26,3 +26,25 @@ public class QuestionStat
     public string Title       { get; set; } = null!;
     public double SuccessRate { get; set; }
 }
+
+public class SessionSubmissionsResponse
+{
+    public Guid                       SessionId   { get; set; }
+    public JsonElement                FormData    { get; set; }
+    public List<SessionSubmissionDto> Submissions { get; set; } = [];
+}
+
+public class SessionSubmissionDto
+{
+    public Guid     SubmissionId   { get; set; }
+    public Guid     QuestionId     { get; set; }
+    public string   QuestionTitle  { get; set; } = null!;
+    public string   QuestionType   { get; set; } = null!;
+    public int      QuestionPoints { get; set; }
+    public string   Language       { get; set; } = null!;
+    public string   Code           { get; set; } = null!;
+    public int      Score          { get; set; }
+    public string   Status         { get; set; } = null!;
+    public DateTime SubmittedAt    { get; set; }
+    public bool     HasReplay      { get; set; }
+}

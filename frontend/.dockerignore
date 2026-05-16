@@ -3,6 +3,5 @@ dist/
 .vite/
 *.log
 .dockerignore
-nginx-spa.conf
 Dockerfile
 Dockerfile.dev

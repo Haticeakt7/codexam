@@ -38,18 +38,23 @@ public static class InfrastructureServiceExtensions
 
         services.AddHangfireServer(options =>
         {
-            options.WorkerCount = 4;
-            options.Queues = ["default", "execution"];
+            options.WorkerCount = 8;
+            options.Queues = ["grading", "execution", "default"];
         });
 
-        // Application service registrations (stub implementations)
-        services.AddScoped<IAuthService,       AuthService>();
-        services.AddScoped<IExecutionService,  ExecutionService>();
-        services.AddScoped<IQuizService,       QuizService>();
-        services.AddScoped<IQuestionService,   QuestionService>();
-        services.AddScoped<ISessionService,    SessionService>();
-        services.AddScoped<IAdminService,      AdminService>();
-        services.AddScoped<ISubmissionService, SubmissionService>();
+        // Application service registrations
+        services.AddScoped<IAuthService,               AuthService>();
+        services.AddScoped<IExecutionService,          ExecutionService>();
+        services.AddScoped<IQuizService,               QuizService>();
+        services.AddScoped<IQuestionService,           QuestionService>();
+        services.AddScoped<ISessionService,            SessionService>();
+        services.AddScoped<IAdminService,              AdminService>();
+        services.AddScoped<ISubmissionService,         SubmissionService>();
+        services.AddScoped<IExecutionWorker,           ExecutionWorker>();
+        services.AddScoped<IGradingWorker,             GradingWorker>();
+        services.AddScoped<IUserPreferencesService,    UserPreferencesService>();
+        services.AddScoped<IUserService,               UserService>();
+        services.AddScoped<QuizStatusJob>();
 
         return services;
     }

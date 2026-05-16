@@ -9,4 +9,6 @@ public class CreateQuizRequest
     public AntiCheatOptionsDto AntiCheatOptions  { get; set; } = new();
     public List<FormFieldDto>  FormSchema        { get; set; } = [];
     public string?             AccessCode        { get; set; }
+    public DateTime?           StartsAt          { get; set; }
+    public DateTime?           EndsAt            { get; set; }
 }

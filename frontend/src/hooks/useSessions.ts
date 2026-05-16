@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { sessionsApi, type JoinRequest, type SubmitRequest, type ExamEventRequest } from "@/api/sessions";
+import { sessionsApi, type JoinRequest, type SubmitRequest, type ExamEventRequest, type CodeSnapshotRequest } from "@/api/sessions";
 import { submissionsApi, type ReplayDiffEntry } from "@/api/submissions";
 import { useExamStore } from "@/stores/examStore";
 
@@ -23,6 +23,7 @@ export function useJoinQuiz(quizId: string) {
         sessionId:    data.sessionId,
         quizId:       data.quizId,
         endsAt:       data.endsAt,
+        questions:    data.questions ?? [],
       });
     },
   });
@@ -34,9 +35,21 @@ export function useSubmit(quizId: string) {
   });
 }
 
+export function useFinishExam(quizId: string) {
+  return useMutation({
+    mutationFn: () => sessionsApi.finish(quizId),
+  });
+}
+
 export function useLogEvent(quizId: string) {
   return useMutation({
     mutationFn: (data: ExamEventRequest) => sessionsApi.logEvent(quizId, data),
+  });
+}
+
+export function useCodeSnapshot(quizId: string) {
+  return useMutation({
+    mutationFn: (data: CodeSnapshotRequest) => sessionsApi.codeSnapshot(quizId, data),
   });
 }
 
@@ -60,5 +73,13 @@ export function useAppendReplayDiff(submissionId: string) {
   return useMutation({
     mutationFn: (diffs: ReplayDiffEntry[]) =>
       submissionsApi.appendReplayDiff(submissionId, diffs),
+  });
+}
+
+export function useSessionSubmissions(sessionId: string | null) {
+  return useQuery({
+    queryKey: ["session-submissions", sessionId],
+    queryFn:  () => submissionsApi.getSessionSubmissions(sessionId!),
+    enabled:  !!sessionId,
   });
 }
