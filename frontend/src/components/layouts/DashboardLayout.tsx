@@ -16,6 +16,14 @@ const NAV_ITEMS = [
   { to: "/profile",       label: "nav.profile",         icon: "◉" },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { to: "/admin",          label: "admin.stats",    icon: "◈", end: true },
+  { to: "/admin/users",    label: "admin.users",    icon: "◉" },
+  { to: "/admin/quizzes",  label: "admin.quizzes",  icon: "▤" },
+  { to: "/admin/sessions", label: "admin.sessions", icon: "◌" },
+  { to: "/admin/system",   label: "admin.logs",     icon: "⊞" },
+];
+
 interface DashboardLayoutProps {
   children: ReactNode;
   noPadding?: boolean;
@@ -74,6 +82,33 @@ export default function DashboardLayout({ children, noPadding }: DashboardLayout
             {t(item.label)}
           </NavLink>
         ))}
+        {user?.role === "Admin" && (
+          <>
+            <div className="mt-3 mb-1 px-3 flex items-center gap-2">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-danger">{t("nav.admin")}</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+            {ADMIN_NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={closeSidebar}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                    isActive
+                      ? "bg-danger/10 font-medium text-danger"
+                      : "text-muted hover:bg-surface2 hover:text-text"
+                  }`
+                }
+              >
+                <span className="text-base leading-none w-5 text-center">{item.icon}</span>
+                {t(item.label)}
+              </NavLink>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Footer */}

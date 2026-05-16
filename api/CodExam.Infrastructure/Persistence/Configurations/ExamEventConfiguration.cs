@@ -22,6 +22,12 @@ public class ExamEventConfiguration : IEntityTypeConfiguration<ExamEvent>
             .HasForeignKey(e => e.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        b.HasOne(e => e.Question)
+            .WithMany()
+            .HasForeignKey(e => e.QuestionId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
         b.HasIndex(e => e.SessionId);
         b.HasIndex(e => new { e.SessionId, e.Timestamp });
 

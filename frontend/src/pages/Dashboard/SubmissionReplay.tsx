@@ -273,7 +273,7 @@ export default function SubmissionReplay() {
                       onClick={handlePlayPause}
                       className="rounded-lg bg-primary px-4 py-2 font-bold text-white hover:bg-primary-hover transition-colors shadow-sm text-base w-12 flex items-center justify-center"
                     >
-                      {isPlaying ? "⏸" : "▶"}
+                      ⏯️
                     </button>
                     <button
                       onClick={() => handleSeek(currentIndex + 1)}

@@ -182,6 +182,8 @@ try
             });
         }
         await db.SaveChangesAsync();
+
+        await CodExam.Api.Seeds.QuizSeeder.SeedAsync(db);
     }
 
     app.UseMiddleware<CodExam.Api.Middlewares.ExceptionHandlerMiddleware>();

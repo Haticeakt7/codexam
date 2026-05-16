@@ -89,6 +89,7 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
                 .ThenInclude(sub => sub.Question)
             .Include(s => s.Submissions)
                 .ThenInclude(sub => sub.Replay)
+            .Include(s => s.ExamEvents)
             .FirstOrDefaultAsync(s => s.Id == sessionId);
 
         if (session == null)
@@ -96,6 +97,20 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
 
         if (session.Quiz.OwnerId != requesterId)
             throw new UnauthorizedAccessException("Access denied.");
+
+        // Group violations by questionId for quick lookup
+        var violationsByQuestion = session.ExamEvents
+            .Where(e => e.EventType.ToString() != "Warned" && e.QuestionId.HasValue)
+            .GroupBy(e => e.QuestionId!.Value)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(e => e.Timestamp)
+                       .Select(e => new ViolationDto
+                       {
+                           EventType = e.EventType.ToString(),
+                           Severity  = e.Severity.ToString(),
+                           Timestamp = e.Timestamp
+                       }).ToList());
 
         var submissionDtos = session.Submissions
             .GroupBy(s => s.QuestionId)
@@ -112,7 +127,8 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
                 Score          = s.Score,
                 Status         = s.Status.ToString(),
                 SubmittedAt    = s.SubmittedAt,
-                HasReplay      = s.Replay != null
+                HasReplay      = s.Replay != null,
+                Violations     = violationsByQuestion.TryGetValue(s.QuestionId, out var v) ? v : []
             })
             .OrderBy(s => s.QuestionTitle)
             .ToList();
@@ -121,6 +137,7 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
         {
             SessionId   = sessionId,
             FormData    = session.FormData.RootElement,
+            StartedAt   = session.StartedAt,
             Submissions = submissionDtos
         };
     }
@@ -130,6 +147,7 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
         var sessions = await db.QuizSessions
             .AsNoTracking()
             .Include(s => s.Submissions)
+            .Include(s => s.ExamEvents)
             .Where(s => s.QuizId == quizId)
             .ToListAsync();
 
@@ -142,12 +160,13 @@ public class SubmissionService(AppDbContext db) : ISubmissionService
 
         var participants = sessions.Select(s => new ParticipantResult
         {
-            SessionId = s.Id,
-            FormData = s.FormData.RootElement,
-            TotalScore = s.TotalScore,
-            MaxScore = maxScore,
+            SessionId          = s.Id,
+            FormData           = s.FormData.RootElement,
+            TotalScore         = s.TotalScore,
+            MaxScore           = maxScore,
             CompletedQuestions = s.Submissions.Select(sub => sub.QuestionId).Distinct().Count(),
-            SubmittedAt = s.FinishedAt ?? s.StartedAt
+            ViolationCount     = s.ExamEvents.Count(e => e.EventType.ToString() != "Warned"),
+            SubmittedAt        = s.FinishedAt ?? s.StartedAt
         }).ToList();
 
         var avgScore = participants.Count > 0 ? participants.Average(p => p.TotalScore) : 0;

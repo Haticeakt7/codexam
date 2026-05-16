@@ -16,6 +16,7 @@ export interface SubmitRequest {
 
 export interface ExamEventRequest {
   eventType: "TabSwitch" | "FullscreenExit" | "ClipboardAttempt" | "Keydown" | "PageRefresh";
+  questionId?: string;
   metadata?: Record<string, unknown>;
 }
 

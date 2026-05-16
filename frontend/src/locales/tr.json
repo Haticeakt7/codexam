@@ -358,7 +358,8 @@
       "ClipboardAttempt": "Pano Erişimi",
       "Keydown": "Tuş Basımı",
       "PageRefresh": "Sayfa Yenileme (Sonlandırıldı)"
-    }
+    },
+    "atQuestion": "Soru"
   },
   "results": {
     "title": "Sınav Sonuçları",
@@ -383,7 +384,10 @@
     "maxScore": "Maks. Puan",
     "questionType": "Soru Tipi",
     "points": "Puan",
-    "replayBtn": "▶ Kodu İzle"
+    "replayBtn": "▶ Kodu İzle",
+    "violations": "İhlal",
+    "violationsNone": "İhlaller (bu soruda ihlal gerçekleşmedi)",
+    "violationsCount": "İhlaller ({{count}})"
   },
   "replay": {
     "title": "Replay Oynatıcı",

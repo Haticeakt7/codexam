@@ -198,6 +198,12 @@ export interface UserPreferences {
 
 // ---------- Session Submissions (participant answer detail) ----------
 
+export interface ViolationEntry {
+  eventType: string;
+  severity: string;
+  timestamp: string;
+}
+
 export interface SessionSubmission {
   submissionId: string;
   questionId: string;
@@ -210,11 +216,13 @@ export interface SessionSubmission {
   status: string;
   submittedAt: string;
   hasReplay: boolean;
+  violations: ViolationEntry[];
 }
 
 export interface SessionSubmissionsResponse {
   sessionId: string;
   formData: Record<string, unknown>;
+  startedAt: string;
   submissions: SessionSubmission[];
 }
 
@@ -246,6 +254,7 @@ export interface ParticipantResult {
   totalScore: number;
   maxScore: number;
   completedQuestions: number;
+  violationCount: number;
   submittedAt: string;
 }
 
@@ -286,6 +295,8 @@ export interface AdminSessionEvent {
   severity: string;
   timestamp: string;
   message?: string;
+  questionId?: string;
+  questionTitle?: string;
 }
 
 export interface AdminSession {
